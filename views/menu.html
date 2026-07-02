@@ -42,12 +42,34 @@
         <datalist id="kategoriListe"></datalist>
       </div>
       <div class="form-grup">
-        <label>Fiyat (₺) *</label>
-        <input type="number" id="fiyat" required min="0" step="1" />
+        <label>Fiyat (₺) * <small>(porsiyonlu üründe taban fiyat, boş bırakılabilir → 0)</small></label>
+        <input type="number" id="fiyat" required min="0" step="1" value="0" />
+      </div>
+      <div class="form-grup">
+        <label>Kalori <small>(porsiyonsuz ürünlerde, örn: 140 veya 350-700)</small></label>
+        <input type="text" id="kalori" maxlength="30" placeholder="Örn: 350-700" />
       </div>
       <div class="form-grup">
         <label>Açıklama</label>
         <textarea id="aciklama" rows="2" maxlength="200"></textarea>
+      </div>
+
+      <!-- Porsiyonlar -->
+      <div class="form-grup">
+        <label>Porsiyonlar <small>(varsa; her porsiyonun ayrı fiyat + kalorisi)</small></label>
+        <div id="porsiyonListe"></div>
+        <button type="button" class="buton-ikincil" id="porsiyonEkle">+ Porsiyon Ekle</button>
+      </div>
+
+      <!-- Çıkarılabilir malzemeler -->
+      <div class="form-grup">
+        <label>Çıkarılabilir Malzemeler <small>(müşteri "istemiyorum" diyebilir)</small></label>
+        <div class="mal-secim">
+          <label><input type="checkbox" class="mal" value="Domates" /> Domates</label>
+          <label><input type="checkbox" class="mal" value="Soğan" /> Soğan</label>
+          <label><input type="checkbox" class="mal" value="Yağ" /> Yağ</label>
+          <label><input type="checkbox" class="mal" value="Maydanoz" /> Maydanoz</label>
+        </div>
       </div>
       <div class="form-grup">
         <label>Görsel</label>

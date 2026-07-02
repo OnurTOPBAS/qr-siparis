@@ -99,6 +99,10 @@ const kalemleriDuzenle = (urunler) =>
   urunler.map((u) => ({
     id: Number(u.id) || null,
     ad: String(u.ad || "").slice(0, 100),
+    porsiyon: u.porsiyon ? String(u.porsiyon).slice(0, 60) : null,
+    cikarilan: Array.isArray(u.cikarilan)
+      ? u.cikarilan.slice(0, 10).map((x) => String(x).slice(0, 40))
+      : [],
     adet: Math.max(1, parseInt(u.adet, 10) || 1),
     fiyat: Number(u.fiyat) || 0,
   }));
@@ -189,16 +193,41 @@ app.get("/api/admin/menu", girisGerekli, (_req, res) => res.json(oku(MENU_PATH, 
 
 app.post("/api/admin/menu/urun", girisGerekli, (req, res) => {
   const menu = oku(MENU_PATH, { urunler: [] });
-  const { id, ad, kategori, fiyat, aciklama, resim } = req.body || {};
-  if (!ad || !kategori || fiyat == null) return res.status(400).json({ error: "Ad, kategori ve fiyat zorunlu" });
-  if (id) {
-    const u = menu.urunler.find((x) => x.id === id);
+  const g = req.body || {};
+  if (!g.ad || !g.kategori || g.fiyat == null) return res.status(400).json({ error: "Ad, kategori ve fiyat zorunlu" });
+
+  const temel = {
+    ad: String(g.ad).slice(0, 100),
+    kategori: String(g.kategori).slice(0, 50),
+    fiyat: Number(g.fiyat) || 0,
+    aciklama: g.aciklama ? String(g.aciklama).slice(0, 200) : "",
+    kalori: g.kalori ? String(g.kalori).slice(0, 30) : "",
+  };
+  const porsiyonlar = Array.isArray(g.porsiyonlar)
+    ? g.porsiyonlar
+        .map((p) => ({ ad: String(p.ad || "").slice(0, 60), fiyat: Number(p.fiyat) || 0, kalori: String(p.kalori || "").slice(0, 30) }))
+        .filter((p) => p.ad)
+    : [];
+  const cikarilabilir = Array.isArray(g.cikarilabilir)
+    ? g.cikarilabilir.map((x) => String(x).slice(0, 40)).filter(Boolean)
+    : [];
+
+  if (g.id) {
+    const u = menu.urunler.find((x) => x.id === Number(g.id));
     if (!u) return res.status(404).json({ error: "Ürün bulunamadı" });
-    Object.assign(u, { ad, kategori, fiyat: Number(fiyat), aciklama: aciklama || "" });
-    if (resim) u.resim = resim;
+    // eski alanları temizle (id + resim hariç), sonra yeniden yaz
+    Object.keys(u).forEach((k) => { if (k !== "id" && k !== "resim") delete u[k]; });
+    Object.assign(u, temel);
+    if (g.resim) u.resim = g.resim;
+    if (u.resim === undefined) u.resim = "";
+    if (porsiyonlar.length) u.porsiyonlar = porsiyonlar;
+    if (cikarilabilir.length) u.cikarilabilir = cikarilabilir;
   } else {
     const yeniId = menu.urunler.reduce((m, x) => Math.max(m, x.id), 0) + 1;
-    menu.urunler.push({ id: yeniId, ad, kategori, fiyat: Number(fiyat), aciklama: aciklama || "", resim: resim || "" });
+    const yeni = { id: yeniId, ...temel, resim: g.resim || "" };
+    if (porsiyonlar.length) yeni.porsiyonlar = porsiyonlar;
+    if (cikarilabilir.length) yeni.cikarilabilir = cikarilabilir;
+    menu.urunler.push(yeni);
   }
   yaz(MENU_PATH, menu);
   res.json({ ok: true });
@@ -262,10 +291,11 @@ app.get("/api/report", girisGerekli, (_req, res) => {
     for (const o of filt) {
       ciro += o.toplam;
       for (const u of o.urunler) {
-        const k = map.get(u.ad) || { ad: u.ad, adet: 0, ciro: 0 };
+        const etiket = u.porsiyon ? `${u.ad} (${u.porsiyon})` : u.ad;
+        const k = map.get(etiket) || { ad: etiket, adet: 0, ciro: 0 };
         k.adet += u.adet;
         k.ciro += u.fiyat * u.adet;
-        map.set(u.ad, k);
+        map.set(etiket, k);
       }
     }
     return { ciro, siparis: filt.length, urunler: [...map.values()].sort((a, b) => b.adet - a.adet) };

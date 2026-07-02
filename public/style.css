@@ -1,5 +1,36 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 [hidden] { display: none !important; }
+
+/* Kalori rozeti */
+.kalori { font-size: .7rem; font-weight: 500; color: #b06a00; background: #fff3d6; padding: 2px 7px; border-radius: 10px; white-space: nowrap; vertical-align: middle; }
+
+/* Porsiyon seçici */
+.porsiyon-sec {
+  width: 100%; margin: 8px 0; padding: 9px 10px; border: 1.5px solid var(--sari);
+  border-radius: 9px; background: #fffdf6; font-size: .92rem; font-family: inherit;
+  color: #1c1c1c; cursor: pointer; font-weight: 600;
+}
+
+/* Çıkarılacak malzemeler */
+.cikar-grup { margin: 6px 0 4px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.cikar-baslik { font-size: .75rem; color: #999; width: 100%; }
+.cikar-chip {
+  border: 1px solid #ddd; background: #fafafa; color: #555; border-radius: 16px;
+  padding: 4px 11px; font-size: .8rem; cursor: pointer; font-family: inherit;
+}
+.cikar-chip.aktif { background: #ffe3e3; border-color: #e74c3c; color: #c0392b; text-decoration: line-through; }
+
+/* Sepete ekle butonu */
+.ekle-btn {
+  border: none; background: var(--sari); color: #241f00; font-weight: 700;
+  padding: 8px 16px; border-radius: 9px; cursor: pointer; font-size: .9rem;
+}
+.ekle-btn.eklendi { background: var(--yesil); color: #fff; }
+
+/* Sepet satırı (porsiyon + çıkarılan bilgili) */
+.s-sol { display: flex; flex-direction: column; gap: 2px; }
+.s-cikar { font-size: .75rem; color: #c0392b; }
+
 :root {
   --sari: #f5b301;
   --koyu: #1c1c1c;

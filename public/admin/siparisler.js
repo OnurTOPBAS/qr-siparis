@@ -69,7 +69,11 @@ function kartEkle(o, yeniMi) {
   kart.className = "kart" + (yeniMi ? " yeni" : "");
   kart.dataset.id = o.id;
   const saat = new Date(o.tarih).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
-  const urunler = o.urunler.map((u) => `<li><span class="adet">${u.adet}×</span> ${esc(u.ad)}</li>`).join("");
+  const urunler = o.urunler.map((u) => {
+    const porsiyon = u.porsiyon ? ` <span class="k-porsiyon">${esc(u.porsiyon)}</span>` : "";
+    const cikar = (u.cikarilan && u.cikarilan.length) ? `<div class="k-cikar">🚫 ${esc(u.cikarilan.join(", "))}</div>` : "";
+    return `<li><span class="adet">${u.adet}×</span> ${esc(u.ad)}${porsiyon}${cikar}</li>`;
+  }).join("");
   const notHtml = o.not ? `<div class="not">📝 ${esc(o.not)}</div>` : "";
   kart.innerHTML = `
     <div class="kart-ust">

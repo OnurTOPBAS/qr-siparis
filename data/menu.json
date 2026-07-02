@@ -2,131 +2,310 @@
   "urunler": [
     {
       "id": 1,
-      "ad": "Et Tantuni Dürüm",
-      "kategori": "Et Ürünleri",
-      "fiyat": 170,
-      "resim": "img/et-durum.jpg",
-      "aciklama": "Lavaş ekmeği, maydanoz, soğan ve domates"
+      "ad": "Et Tantuni",
+      "kategori": "Et Tantuniler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "Porsiyon seçiniz",
+      "cikarilabilir": ["Domates", "Soğan", "Yağ", "Maydanoz"],
+      "porsiyonlar": [
+        { "ad": "Dürüm", "fiyat": 0, "kalori": "460-670" },
+        { "ad": "Ekmek Arası", "fiyat": 0, "kalori": "530-790" },
+        { "ad": "Yoğurtlu", "fiyat": 0, "kalori": "750-950" },
+        { "ad": "Hamburger", "fiyat": 0, "kalori": "650-850" },
+        { "ad": "Üç Çeyrek", "fiyat": 0, "kalori": "780-1050" },
+        { "ad": "Tam Ekmek Arası", "fiyat": 0, "kalori": "900-1300" }
+      ]
     },
     {
       "id": 2,
-      "ad": "Et Tantuni Ekmek",
-      "kategori": "Et Ürünleri",
-      "fiyat": 190,
-      "resim": "img/et-ekmek.jpg",
-      "aciklama": "Yarım ekmek arası özel tantuni"
+      "ad": "Tavuk Tantuni",
+      "kategori": "Tavuk Tantuniler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "Porsiyon seçiniz",
+      "cikarilabilir": ["Domates", "Soğan", "Yağ", "Maydanoz"],
+      "porsiyonlar": [
+        { "ad": "Dürüm", "fiyat": 0, "kalori": "350-560" },
+        { "ad": "Ekmek Arası", "fiyat": 0, "kalori": "450-650" },
+        { "ad": "Yoğurtlu", "fiyat": 0, "kalori": "650-850" },
+        { "ad": "Hamburger", "fiyat": 0, "kalori": "550-750" },
+        { "ad": "Üç Çeyrek", "fiyat": 0, "kalori": "650-900" },
+        { "ad": "Tam Ekmek", "fiyat": 0, "kalori": "800-1280" }
+      ]
     },
     {
       "id": 3,
-      "ad": "Et Tanburger",
-      "kategori": "Et Ürünleri",
-      "fiyat": 300,
-      "resim": "img/et-burger.jpg",
-      "aciklama": "Özel tantuni etiyle burger lezzeti"
+      "ad": "Hünkar Beğendi Tantuni (Et)",
+      "kategori": "Yeni Ürünler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "750-950",
+      "cikarilabilir": ["Domates", "Soğan", "Yağ", "Maydanoz"]
     },
     {
       "id": 4,
-      "ad": "Tavuk Tantuni Dürüm",
-      "kategori": "Tavuk Ürünleri",
-      "fiyat": 160,
-      "resim": "img/tavuk-durum.jpg",
-      "aciklama": "Klasik lavaş dürüm lezzeti"
+      "ad": "Kaşarlı Ekmek Et Tantuni",
+      "kategori": "Yeni Ürünler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "650-850",
+      "cikarilabilir": ["Domates", "Soğan", "Yağ", "Maydanoz"]
     },
     {
       "id": 5,
-      "ad": "Tavuk Tantuni Ekmek",
-      "kategori": "Tavuk Ürünleri",
-      "fiyat": 180,
-      "resim": "img/tavuk-ekmek.jpg",
-      "aciklama": "Yarım ekmek arası tavuk tantuni"
+      "ad": "Chedarlı Ekmek Et Tantuni",
+      "kategori": "Yeni Ürünler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "700-900",
+      "cikarilabilir": ["Domates", "Soğan", "Yağ", "Maydanoz"]
     },
     {
       "id": 6,
-      "ad": "Tavuk Tanburger",
-      "kategori": "Tavuk Ürünleri",
-      "fiyat": 280,
-      "resim": "img/tavuk-burger.jpg",
-      "aciklama": "Tavuk tantunili burger"
+      "ad": "Kaşarlı Et Dürüm Tantuni",
+      "kategori": "Yeni Ürünler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "600-800",
+      "cikarilabilir": ["Domates", "Soğan", "Yağ", "Maydanoz"]
     },
     {
       "id": 7,
-      "ad": "Patates Kızartması",
-      "kategori": "Yan Ürünler",
-      "fiyat": 90,
-      "resim": "img/patates.jpg",
-      "aciklama": "Çıtır patates"
+      "ad": "Chedarlı Et Dürüm Tantuni",
+      "kategori": "Yeni Ürünler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "650-850",
+      "cikarilabilir": ["Domates", "Soğan", "Yağ", "Maydanoz"]
     },
     {
       "id": 8,
-      "ad": "Yoğurtlu",
-      "kategori": "Yan Ürünler",
-      "fiyat": 110,
-      "resim": "img/yogurtlu.jpg",
-      "aciklama": "Yoğurtlu porsiyon"
+      "ad": "Patlıcanlı Yoğurtlu Et Tantuni",
+      "kategori": "Yeni Ürünler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "850-1100",
+      "cikarilabilir": ["Domates", "Soğan", "Yağ", "Maydanoz"]
     },
     {
       "id": 9,
-      "ad": "Ayran",
-      "kategori": "İçecekler",
-      "fiyat": 30,
-      "resim": "img/ayran.jpg",
-      "aciklama": "Soğuk ayran"
+      "ad": "Patlıcanlı Yoğurtlu Tavuk Tantuni",
+      "kategori": "Yeni Ürünler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "750-950",
+      "cikarilabilir": ["Domates", "Soğan", "Yağ", "Maydanoz"]
     },
     {
       "id": 10,
-      "ad": "Şalgam",
-      "kategori": "İçecekler",
-      "fiyat": 35,
-      "resim": "img/salgam.jpg",
-      "aciklama": "Acılı / acısız"
+      "ad": "Hünkar Beğendi Tavuk",
+      "kategori": "Yeni Ürünler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "650-850",
+      "cikarilabilir": ["Domates", "Soğan", "Yağ", "Maydanoz"]
     },
     {
       "id": 11,
-      "ad": "Kola",
-      "kategori": "İçecekler",
-      "fiyat": 45,
-      "resim": "img/kola.jpg",
-      "aciklama": "330 ml"
+      "ad": "Kaşarlı Ekmek Arası Tavuk",
+      "kategori": "Yeni Ürünler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "550-750",
+      "cikarilabilir": ["Domates", "Soğan", "Yağ", "Maydanoz"]
     },
     {
       "id": 12,
-      "ad": "Fanta",
-      "kategori": "İçecekler",
-      "fiyat": 45,
-      "resim": "img/fanta.jpg",
-      "aciklama": "330 ml"
+      "ad": "Chedarlı Ekmek Arası Tavuk",
+      "kategori": "Yeni Ürünler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "700-800",
+      "cikarilabilir": ["Domates", "Soğan", "Yağ", "Maydanoz"]
     },
     {
       "id": 13,
-      "ad": "Sprite",
-      "kategori": "İçecekler",
-      "fiyat": 45,
-      "resim": "img/sprite.jpg",
-      "aciklama": "330 ml"
+      "ad": "Kaşarlı Dürüm Tavuk Tantuni",
+      "kategori": "Yeni Ürünler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "600-700",
+      "cikarilabilir": ["Domates", "Soğan", "Yağ", "Maydanoz"]
     },
     {
       "id": 14,
-      "ad": "Soda",
-      "kategori": "İçecekler",
-      "fiyat": 30,
-      "resim": "img/soda.jpg",
-      "aciklama": "Sade / meyveli"
+      "ad": "Chedarlı Tavuk Tantuni Dürüm",
+      "kategori": "Yeni Ürünler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "650-750",
+      "cikarilabilir": ["Domates", "Soğan", "Yağ", "Maydanoz"]
     },
     {
       "id": 15,
-      "ad": "Ice Tea",
-      "kategori": "İçecekler",
-      "fiyat": 45,
-      "resim": "img/icetea.jpg",
-      "aciklama": "Şeftali / limon"
+      "ad": "Patates Kızartması",
+      "kategori": "Yan Ürünler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "450-550"
     },
     {
       "id": 16,
-      "ad": "Su",
+      "ad": "Kelle Paça",
+      "kategori": "Çorbalar",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "350-700"
+    },
+    {
+      "id": 17,
+      "ad": "Beyran Çorbası",
+      "kategori": "Çorbalar",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "650-750"
+    },
+    {
+      "id": 18,
+      "ad": "Ayak Paça Çorbası",
+      "kategori": "Çorbalar",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "430-750"
+    },
+    {
+      "id": 19,
+      "ad": "Mercimek Çorbası",
+      "kategori": "Çorbalar",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "180-300"
+    },
+    {
+      "id": 20,
+      "ad": "Kola",
       "kategori": "İçecekler",
-      "fiyat": 15,
-      "resim": "img/su.jpg",
-      "aciklama": "0.5 lt"
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "330 ml",
+      "kalori": "140"
+    },
+    {
+      "id": 21,
+      "ad": "Pepsi Max",
+      "kategori": "İçecekler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "5-10"
+    },
+    {
+      "id": 22,
+      "ad": "Yedigün",
+      "kategori": "İçecekler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "150"
+    },
+    {
+      "id": 23,
+      "ad": "7UP",
+      "kategori": "İçecekler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "0-5"
+    },
+    {
+      "id": 24,
+      "ad": "Lipton Şeftali",
+      "kategori": "İçecekler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "65"
+    },
+    {
+      "id": 25,
+      "ad": "Lipton Limon",
+      "kategori": "İçecekler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "45"
+    },
+    {
+      "id": 26,
+      "ad": "Şalgam",
+      "kategori": "İçecekler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "16"
+    },
+    {
+      "id": 27,
+      "ad": "Ayran",
+      "kategori": "İçecekler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "92"
+    },
+    {
+      "id": 28,
+      "ad": "Açık Ayran",
+      "kategori": "İçecekler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "90"
+    },
+    {
+      "id": 29,
+      "ad": "Susurluk Ayran",
+      "kategori": "İçecekler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "92"
+    },
+    {
+      "id": 30,
+      "ad": "Limonlu Soda",
+      "kategori": "İçecekler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "34"
+    },
+    {
+      "id": 31,
+      "ad": "Sade Soda",
+      "kategori": "İçecekler",
+      "fiyat": 0,
+      "resim": "",
+      "aciklama": "",
+      "kalori": "0"
     }
   ]
 }
