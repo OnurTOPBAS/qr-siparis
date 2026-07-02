@@ -96,4 +96,22 @@ body {
   background: var(--yesil); color: #fff; font-size: 2.2rem; line-height: 70px;
 }
 .onay-ic h2 { margin-bottom: 8px; }
-.onay-ic p { color: #666; margin-bottom: 20px; }
+.onay-ic p { color: #666; margin-bottom: 12px; }
+.onay-ipucu { font-size: .82rem; color: #999; margin-bottom: 18px; }
+.onay-ic .siparis-btn + .siparis-btn { margin-top: 10px; }
+.siparis-btn.ikincil { background: #34495e; }
+.siparis-btn.tehlike { background: transparent; color: var(--kirmizi, #e74c3c); border: 1.5px solid var(--kirmizi, #e74c3c); }
+
+/* Aktif sipariş şeridi */
+.aktif-serit {
+  position: sticky; top: 56px; z-index: 15;
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  background: #fff7e0; border-bottom: 1px solid #f0d98a;
+  padding: 10px 16px; font-size: .9rem; color: #7a5c00; font-weight: 600;
+}
+.serit-butonlar { display: flex; gap: 8px; }
+.serit-btn {
+  border: none; background: var(--sari); color: #241f00; font-weight: 700;
+  padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: .85rem;
+}
+.serit-btn.iptal { background: transparent; color: #e74c3c; border: 1.5px solid #e74c3c; }

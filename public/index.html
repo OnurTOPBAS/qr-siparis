@@ -12,6 +12,15 @@
     <div class="masa-bilgi">Masa: <span id="masaNo">-</span></div>
   </header>
 
+  <!-- Aktif sipariş şeridi (hazırlanmadan önce düzenle/iptal) -->
+  <div id="aktifSerit" class="aktif-serit" hidden>
+    <span>🧾 Aktif siparişin var</span>
+    <div class="serit-butonlar">
+      <button id="seritDuzenle" class="serit-btn">Düzenle</button>
+      <button id="seritIptal" class="serit-btn iptal">İptal Et</button>
+    </div>
+  </div>
+
   <main id="menu" class="menu"></main>
 
   <!-- Sepet çubuğu -->
@@ -42,6 +51,9 @@
       <div class="onay-tik">✓</div>
       <h2>Siparişiniz alındı!</h2>
       <p>Masa <strong id="onayMasa"></strong> için siparişiniz mutfağa iletildi.</p>
+      <p class="onay-ipucu">Hazırlanmaya başlanmadan önce değiştirebilir veya iptal edebilirsiniz.</p>
+      <button id="onayDuzenle" class="siparis-btn ikincil">Siparişimi Düzenle</button>
+      <button id="onayIptal" class="siparis-btn tehlike">Siparişi İptal Et</button>
       <button id="onayKapat" class="siparis-btn">Menüye Dön</button>
     </div>
   </div>

@@ -95,18 +95,25 @@ app.get("/", (_req, res) => res.sendFile(join(__dirname, "public", "index.html")
 
 app.get("/api/menu", (_req, res) => res.json(oku(MENU_PATH, { urunler: [] })));
 
+const kalemleriDuzenle = (urunler) =>
+  urunler.map((u) => ({
+    id: Number(u.id) || null,
+    ad: String(u.ad || "").slice(0, 100),
+    adet: Math.max(1, parseInt(u.adet, 10) || 1),
+    fiyat: Number(u.fiyat) || 0,
+  }));
+// Admin'e giden kopyada gizli token'ı sızdırma
+const gizle = (o) => { const { token, ...rest } = o; return rest; };
+
 app.post("/api/order", (req, res) => {
   const { masa, urunler, not } = req.body || {};
   if (!masa || !Array.isArray(urunler) || urunler.length === 0) {
     return res.status(400).json({ error: "Masa ve en az bir ürün gerekli" });
   }
-  const items = urunler.map((u) => ({
-    ad: String(u.ad || "").slice(0, 100),
-    adet: Math.max(1, parseInt(u.adet, 10) || 1),
-    fiyat: Number(u.fiyat) || 0,
-  }));
+  const items = kalemleriDuzenle(urunler);
   const order = {
     id: nextId++,
+    token: crypto.randomUUID(), // sadece sipariş sahibinin düzenleyebilmesi için
     masa: String(masa).slice(0, 20),
     urunler: items,
     not: String(not || "").slice(0, 300),
@@ -116,8 +123,43 @@ app.post("/api/order", (req, res) => {
   };
   orders.push(order);
   kaydetOrders();
-  io.emit("newOrder", order);
-  res.status(201).json({ ok: true, id: order.id });
+  io.emit("newOrder", gizle(order));
+  res.status(201).json({ ok: true, id: order.id, token: order.token });
+});
+
+// Müşteri kendi siparişini görür (durum kontrolü için)
+app.get("/api/order/:id", (req, res) => {
+  const o = orders.find((x) => x.id === Number(req.params.id));
+  if (!o) return res.status(404).json({ error: "Sipariş bulunamadı" });
+  res.json({ id: o.id, masa: o.masa, urunler: o.urunler, not: o.not, toplam: o.toplam, durum: o.durum });
+});
+
+// Müşteri siparişini düzenler — sadece "yeni" durumdayken ve doğru token ile
+app.put("/api/order/:id", (req, res) => {
+  const o = orders.find((x) => x.id === Number(req.params.id));
+  if (!o) return res.status(404).json({ error: "Sipariş bulunamadı" });
+  if ((req.body?.token || "") !== o.token) return res.status(403).json({ error: "Yetki yok" });
+  if (o.durum !== "yeni") return res.status(409).json({ error: "Sipariş hazırlanıyor, artık düzenlenemez" });
+  const { urunler, not } = req.body || {};
+  if (!Array.isArray(urunler) || urunler.length === 0) return res.status(400).json({ error: "En az bir ürün gerekli" });
+  o.urunler = kalemleriDuzenle(urunler);
+  o.not = String(not || "").slice(0, 300);
+  o.toplam = o.urunler.reduce((s, i) => s + i.fiyat * i.adet, 0);
+  kaydetOrders();
+  io.emit("orderChanged", gizle(o));
+  res.json({ ok: true });
+});
+
+// Müşteri siparişini iptal eder — sadece "yeni" durumdayken ve doğru token ile
+app.delete("/api/order/:id", (req, res) => {
+  const o = orders.find((x) => x.id === Number(req.params.id));
+  if (!o) return res.status(404).json({ error: "Sipariş bulunamadı" });
+  if ((req.body?.token || "") !== o.token) return res.status(403).json({ error: "Yetki yok" });
+  if (o.durum !== "yeni") return res.status(409).json({ error: "Sipariş hazırlanıyor, iptal edilemez" });
+  orders = orders.filter((x) => x.id !== o.id);
+  kaydetOrders();
+  io.emit("orderRemoved", { id: o.id });
+  res.json({ ok: true });
 });
 
 // ============ ADMIN GİRİŞ ============
@@ -233,13 +275,13 @@ app.get("/api/report", girisGerekli, (_req, res) => {
 
 // ============ SOCKET.IO ============
 io.on("connection", (socket) => {
-  socket.emit("initOrders", orders.filter((o) => o.durum !== "hazir"));
+  socket.emit("initOrders", orders.filter((o) => o.durum !== "hazir").map(gizle));
   socket.on("markDone", (id) => {
     const o = orders.find((x) => x.id === id);
     if (o) {
       o.durum = "hazir";
       kaydetOrders();
-      io.emit("orderUpdated", { id, durum: "hazir" });
+      io.emit("orderRemoved", { id }); // hazırlanınca panelden kalkar + müşteri düzenlemesi kilitlenir
     }
   });
 });

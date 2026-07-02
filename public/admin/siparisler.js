@@ -49,7 +49,15 @@ socket.on("initOrders", (list) => {
   guncelleSayac();
 });
 socket.on("newOrder", (o) => { kartEkle(o, true); bipCal(); guncelleSayac(); });
-socket.on("orderUpdated", ({ id }) => {
+// Müşteri siparişini düzenledi → kartı güncelle (hafif vurgu, ses yok)
+socket.on("orderChanged", (o) => {
+  const k = document.querySelector(`.kart[data-id="${o.id}"]`);
+  if (k) k.remove();
+  kartEkle(o, true);
+  guncelleSayac();
+});
+// Sipariş iptal edildi veya hazır işaretlendi → panelden kalk
+socket.on("orderRemoved", ({ id }) => {
   const k = document.querySelector(`.kart[data-id="${id}"]`);
   if (k) k.remove();
   guncelleSayac();
