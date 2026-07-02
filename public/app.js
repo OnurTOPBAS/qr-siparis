@@ -12,16 +12,26 @@ const $ = (id) => document.getElementById(id);
 fetch("/api/menu")
   .then((r) => r.json())
   .then((data) => {
-    menu = data;
+    menu = data.urunler || [];
     const c = $("menu");
     c.innerHTML = "";
-    data.forEach((kat) => {
+
+    // Ürünleri kategoriye göre grupla (ilk görülme sırasını koru)
+    const kategoriler = [];
+    const grup = new Map();
+    menu.forEach((u) => {
+      const k = u.kategori || "Diğer";
+      if (!grup.has(k)) { grup.set(k, []); kategoriler.push(k); }
+      grup.get(k).push(u);
+    });
+
+    kategoriler.forEach((katAd) => {
       const h = document.createElement("h2");
       h.className = "kategori";
-      h.textContent = kat.kategori;
+      h.textContent = katAd;
       c.appendChild(h);
 
-      kat.urunler.forEach((u) => {
+      grup.get(katAd).forEach((u) => {
         const div = document.createElement("div");
         div.className = "urun";
         div.innerHTML = `

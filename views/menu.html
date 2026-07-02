@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Menü Yönetimi</title>
+  <link rel="stylesheet" href="/admin/panel.css" />
+</head>
+<body>
+  <nav class="nav">
+    <span class="marka">🍽️ Yönetim</span>
+    <a href="/admin">🔔 Siparişler</a>
+    <a href="/admin/menu" class="aktif">📋 Menü</a>
+    <a href="/admin/masalar">🪑 Masalar & QR</a>
+    <a href="/admin/rapor">📊 Raporlar</a>
+    <div class="sag">
+      <button class="cikis" id="cikis">Çıkış</button>
+    </div>
+  </nav>
+
+  <main class="icerik">
+    <div class="baslik-satir">
+      <h2 class="sayfa-baslik">Menü Yönetimi</h2>
+      <button class="buton-birincil" id="yeniUrun">+ Yeni Ürün</button>
+    </div>
+    <div id="liste"></div>
+    <div id="bos" class="bos" hidden>Henüz ürün yok. "Yeni Ürün" ile başlayın.</div>
+  </main>
+
+  <!-- Ekle/Düzenle Modalı -->
+  <div class="modal" id="modal" hidden>
+    <form class="modal-ic" id="form">
+      <h3 id="modalBaslik">Yeni Ürün</h3>
+      <input type="hidden" id="urunId" />
+      <div class="form-grup">
+        <label>Ürün Adı *</label>
+        <input type="text" id="ad" required maxlength="100" />
+      </div>
+      <div class="form-grup">
+        <label>Kategori *</label>
+        <input type="text" id="kategori" list="kategoriListe" required maxlength="50" placeholder="Örn: İçecekler" />
+        <datalist id="kategoriListe"></datalist>
+      </div>
+      <div class="form-grup">
+        <label>Fiyat (₺) *</label>
+        <input type="number" id="fiyat" required min="0" step="1" />
+      </div>
+      <div class="form-grup">
+        <label>Açıklama</label>
+        <textarea id="aciklama" rows="2" maxlength="200"></textarea>
+      </div>
+      <div class="form-grup">
+        <label>Görsel</label>
+        <input type="file" id="gorsel" accept="image/*" />
+        <img class="onizleme" id="onizleme" hidden />
+        <input type="hidden" id="resim" />
+      </div>
+      <div class="login-hata" id="hata"></div>
+      <div class="modal-butonlar">
+        <button type="button" class="buton-ikincil" id="iptal">İptal</button>
+        <button type="submit" class="buton-birincil" id="kaydet">Kaydet</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/admin/menu.js"></script>
+</body>
+</html>

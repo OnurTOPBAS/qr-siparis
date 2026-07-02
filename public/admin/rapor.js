@@ -2,6 +2,8 @@ const $ = (id) => document.getElementById(id);
 let veri = null;
 let aktifPeriyot = "gunluk";
 
+$("cikis").onclick = async () => { await fetch("/admin/logout", { method: "POST" }); location.href = "/admin/login"; };
+
 async function raporGetir() {
   try {
     const r = await fetch("/api/report");
@@ -24,18 +26,13 @@ function ciz() {
   govde.innerHTML = "";
   d.urunler.forEach((u, i) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${i + 1}</td>
-      <td>${escapeHtml(u.ad)}</td>
-      <td class="sag"><b>${u.adet}</b></td>
-      <td class="sag">${u.ciro.toLocaleString("tr-TR")} ₺</td>`;
+    tr.innerHTML = `<td>${i + 1}</td><td>${esc(u.ad)}</td><td class="sag"><b>${u.adet}</b></td><td class="sag">${u.ciro.toLocaleString("tr-TR")} ₺</td>`;
     govde.appendChild(tr);
   });
   $("bosRapor").hidden = d.urunler.length > 0;
   document.querySelector(".rapor-tablo").style.display = d.urunler.length ? "" : "none";
 }
 
-// Sekme geçişleri
 document.querySelectorAll(".sekme").forEach((btn) => {
   btn.onclick = () => {
     document.querySelectorAll(".sekme").forEach((b) => b.classList.remove("aktif"));
@@ -47,10 +44,8 @@ document.querySelectorAll(".sekme").forEach((btn) => {
 
 $("yenile").onclick = raporGetir;
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-  }[c]));
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
 raporGetir();

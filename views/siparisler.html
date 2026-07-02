@@ -3,25 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kasa Paneli — Siparişler</title>
-  <link rel="stylesheet" href="admin.css" />
+  <title>Siparişler — Yönetim</title>
+  <link rel="stylesheet" href="/admin/panel.css" />
 </head>
 <body>
-  <header class="admin-top">
-    <h1>🔔 Sipariş Paneli</h1>
-    <div class="durum">
+  <nav class="nav">
+    <span class="marka">🍽️ Yönetim</span>
+    <a href="/admin" class="aktif">🔔 Siparişler</a>
+    <a href="/admin/menu">📋 Menü</a>
+    <a href="/admin/masalar">🪑 Masalar & QR</a>
+    <a href="/admin/rapor">📊 Raporlar</a>
+    <div class="sag">
       <span id="baglanti" class="rozet kirmizi">Bağlanıyor...</span>
       <span class="rozet gri">Bekleyen: <b id="sayac">0</b></span>
-      <a href="/admin/rapor" class="ses-btn">📊 Raporlar</a>
       <button id="sesAc" class="ses-btn">🔇 Sesi Aç</button>
+      <button class="cikis" id="cikis">Çıkış</button>
     </div>
-  </header>
+  </nav>
 
   <main id="siparisler" class="siparisler">
     <div id="bos" class="bos">Henüz sipariş yok. Yeni sipariş geldiğinde burada anında görünecek.</div>
   </main>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script src="admin.js"></script>
+  <script src="/admin/siparisler.js"></script>
 </body>
 </html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Masalar & QR</title>
+  <link rel="stylesheet" href="/admin/panel.css" />
+</head>
+<body>
+  <nav class="nav">
+    <span class="marka">🍽️ Yönetim</span>
+    <a href="/admin">🔔 Siparişler</a>
+    <a href="/admin/menu">📋 Menü</a>
+    <a href="/admin/masalar" class="aktif">🪑 Masalar & QR</a>
+    <a href="/admin/rapor">📊 Raporlar</a>
+    <div class="sag">
+      <button class="cikis" id="cikis">Çıkış</button>
+    </div>
+  </nav>
+
+  <main class="icerik">
+    <div class="baslik-satir">
+      <h2 class="sayfa-baslik">Masalar & QR Kodları</h2>
+      <button class="buton-ikincil no-print" onclick="window.print()">🖨️ Tümünü Yazdır</button>
+    </div>
+
+    <form class="masa-ekle no-print" id="ekleForm">
+      <input type="text" id="masaAd" placeholder="Masa adı (örn: 6 veya Bahçe 1)" maxlength="20" />
+      <button type="submit" class="buton-birincil">+ Masa Ekle</button>
+    </form>
+
+    <div class="masa-grid" id="grid"></div>
+  </main>
+
+  <script src="/admin/masalar.js"></script>
+</body>
+</html>
