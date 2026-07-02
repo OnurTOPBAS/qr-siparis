@@ -4,43 +4,63 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Suat Usta Tantuni — Menü</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">Suat Usta Tantuni</div>
-    <div class="masa-bilgi">Masa: <span id="masaNo">-</span></div>
+  <!-- Kapak (hero) -->
+  <header class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-ic">
+      <div class="masa-rozet">🍽️ Masa <span id="masaNo">-</span></div>
+      <h1 class="marka">Suat Usta Tantuni</h1>
+      <p class="slogan">Mersin'in efsane lezzeti — közde, taze, bol malzemeli</p>
+      <a href="#menuAlani" class="hero-btn">Menüyü Keşfet ↓</a>
+    </div>
   </header>
 
-  <!-- Aktif sipariş şeridi (hazırlanmadan önce düzenle/iptal) -->
+  <!-- Kategori geçiş şeridi -->
+  <nav id="katNav" class="kat-nav"></nav>
+
+  <!-- Aktif sipariş şeridi -->
   <div id="aktifSerit" class="aktif-serit" hidden>
     <span>🧾 Aktif siparişin var</span>
     <div class="serit-butonlar">
       <button id="seritDuzenle" class="serit-btn">Düzenle</button>
-      <button id="seritIptal" class="serit-btn iptal">İptal Et</button>
+      <button id="seritIptal" class="serit-btn iptal">İptal</button>
     </div>
   </div>
 
-  <main id="menu" class="menu"></main>
+  <main id="menuAlani" class="menu"></main>
+
+  <footer class="alt-bilgi">
+    <p>Afiyet olsun 🧡</p>
+    <span>Suat Usta Tantuni · QR Sipariş</span>
+  </footer>
 
   <!-- Sepet çubuğu -->
   <button id="sepetBtn" class="sepet-btn" hidden>
-    Sepeti Gör (<span id="sepetAdet">0</span>) — <span id="sepetToplam">0</span> ₺
+    <span class="sepet-sol"><span class="sepet-adet-daire" id="sepetAdet">0</span> Sepetim</span>
+    <span class="sepet-sag"><span id="sepetToplam">0</span> ₺ →</span>
   </button>
 
   <!-- Sepet paneli -->
   <div id="sepetPanel" class="panel" hidden>
     <div class="panel-ic">
+      <div class="panel-tutamac"></div>
       <div class="panel-baslik">
         <h2>Sepetim</h2>
         <button id="kapatBtn" class="kapat">✕</button>
       </div>
       <div id="sepetListe" class="sepet-liste"></div>
       <label class="not-alani">
-        Sipariş notu (opsiyonel)
-        <textarea id="not" placeholder="Örn: Soğansız olsun, acılı istiyorum..."></textarea>
+        <span>📝 Sipariş notu (opsiyonel)</span>
+        <textarea id="not" placeholder="Örn: Acılı olsun, ekmek az kızarsın..."></textarea>
       </label>
-      <div class="panel-toplam">Toplam: <strong><span id="panelToplam">0</span> ₺</strong></div>
+      <div class="panel-toplam">Toplam <strong><span id="panelToplam">0</span> ₺</strong></div>
       <button id="siparisVerBtn" class="siparis-btn">Siparişi Gönder</button>
     </div>
   </div>

@@ -17,17 +17,33 @@ const aktifYaz = (v) => localStorage.setItem(LS_KEY, JSON.stringify(v));
 const aktifSil = () => localStorage.removeItem(LS_KEY);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-// Sepet anahtarı: aynı ürün + porsiyon + çıkarılan + eklenen = tek satır
 const anahtar = (id, porsiyon, cikarilan, eklenen) =>
   `${id}|${porsiyon || ""}|${[...cikarilan].sort().join(",")}|${eklenen.map((e) => e.ad).sort().join(",")}`;
+
+// Kategori / ürün emojileri (görseli olmayan ürünler için)
+const KAT_EMOJI = { "Et Tantuniler": "🥙", "Tavuk Tantuniler": "🌯", "Yeni Ürünler": "⭐", "Çorbalar": "🥣", "Yan Ürünler": "🍟", "İçecekler": "🥤", "Diğer": "🍽️" };
+function urunEmoji(u) {
+  const ad = (u.ad || "").toLowerCase();
+  if (/ayran/.test(ad)) return "🥛";
+  if (/şalgam|salgam|soda/.test(ad)) return "🧉";
+  if (/kola|pepsi|7up|yedig|lipton/.test(ad)) return "🥤";
+  if (/çorba|corba|paça|paca|beyran|mercimek/.test(ad)) return "🥣";
+  if (/patates/.test(ad)) return "🍟";
+  if (/burger|hamburger/.test(ad)) return "🍔";
+  if (/tavuk/.test(ad)) return "🍗";
+  return KAT_EMOJI[u.kategori] || "🥙";
+}
 
 // --- Menüyü yükle ve ekrana bas ---
 fetch("/api/menu")
   .then((r) => r.json())
   .then((data) => {
     menu = data.urunler || [];
-    const c = $("menu");
+    const c = $("menuAlani");
+    const nav = $("katNav");
     c.innerHTML = "";
+    nav.innerHTML = "";
+
     const kategoriler = [];
     const grup = new Map();
     menu.forEach((u) => {
@@ -35,13 +51,32 @@ fetch("/api/menu")
       if (!grup.has(k)) { grup.set(k, []); kategoriler.push(k); }
       grup.get(k).push(u);
     });
-    kategoriler.forEach((katAd) => {
+
+    kategoriler.forEach((katAd, i) => {
+      const secId = "kat-" + i;
+      const chip = document.createElement("button");
+      chip.className = "kat-chip";
+      chip.textContent = katAd;
+      chip.dataset.hedef = secId;
+      chip.onclick = () => document.getElementById(secId).scrollIntoView({ behavior: "smooth", block: "start" });
+      nav.appendChild(chip);
+
+      const sec = document.createElement("section");
+      sec.className = "kat-bolum";
+      sec.id = secId;
       const h = document.createElement("h2");
       h.className = "kategori";
-      h.textContent = katAd;
-      c.appendChild(h);
-      grup.get(katAd).forEach((u) => c.appendChild(urunKarti(u)));
+      h.innerHTML = `<span class="kat-emoji">${KAT_EMOJI[katAd] || "🍽️"}</span> ${esc(katAd)}`;
+      sec.appendChild(h);
+      grup.get(katAd).forEach((u, j) => {
+        const kart = urunKarti(u);
+        kart.style.animationDelay = Math.min(j * 0.04, 0.3) + "s";
+        sec.appendChild(kart);
+      });
+      c.appendChild(sec);
     });
+
+    scrollSpy();
     aktifSiparisiKontrolEt();
   });
 
@@ -54,7 +89,7 @@ function urunKarti(u) {
   const basFiyat = porsiyonlu ? u.porsiyonlar[0].fiyat : u.fiyat;
   const basKalori = (porsiyonlu && u.porsiyonlar[0].kalori) || u.kalori || "";
 
-  const resimHtml = u.resim ? `<img src="/${esc(u.resim)}" alt="${esc(u.ad)}" onerror="this.style.display='none'">` : "";
+  const medalyon = `<div class="urun-medalyon"><span class="medalyon-emoji">${urunEmoji(u)}</span>${u.resim ? `<img src="/${esc(u.resim)}" alt="" onerror="this.remove()">` : ""}</div>`;
 
   const porsiyonHtml = porsiyonlu
     ? `<select class="porsiyon-sec">
@@ -63,30 +98,29 @@ function urunKarti(u) {
     : "";
 
   const cikarHtml = Array.isArray(u.cikarilabilir) && u.cikarilabilir.length
-    ? `<div class="ozel-grup">
-        <span class="ozel-baslik">İstemediklerin:</span>
-        ${u.cikarilabilir.map((m) => `<button type="button" class="cikar-chip" data-mal="${esc(m)}">${esc(m)}</button>`).join("")}
-      </div>`
+    ? `<div class="ozel-grup"><span class="ozel-baslik">İstemediklerin</span>
+        ${u.cikarilabilir.map((m) => `<button type="button" class="cikar-chip" data-mal="${esc(m)}">${esc(m)}</button>`).join("")}</div>`
     : "";
 
   const ekleHtml = Array.isArray(u.eklenebilir) && u.eklenebilir.length
-    ? `<div class="ozel-grup">
-        <span class="ozel-baslik">Ekstra ekle:</span>
-        ${u.eklenebilir.map((e) => `<button type="button" class="ekle-chip" data-ad="${esc(e.ad)}" data-fiyat="${e.fiyat}">+ ${esc(e.ad)}${e.fiyat ? " (" + e.fiyat + "₺)" : ""}</button>`).join("")}
-      </div>`
+    ? `<div class="ozel-grup"><span class="ozel-baslik">Ekstra ekle</span>
+        ${u.eklenebilir.map((e) => `<button type="button" class="ekle-chip" data-ad="${esc(e.ad)}" data-fiyat="${e.fiyat}">+ ${esc(e.ad)}${e.fiyat ? " (" + e.fiyat + "₺)" : ""}</button>`).join("")}</div>`
     : "";
 
   div.innerHTML = `
-    ${resimHtml}
+    ${medalyon}
     <div class="urun-bilgi">
-      <h3>${esc(u.ad)} ${basKalori ? `<span class="kalori">${esc(basKalori)} kcal</span>` : ""}</h3>
-      ${u.aciklama ? `<p>${esc(u.aciklama)}</p>` : ""}
+      <div class="urun-ust">
+        <h3>${esc(u.ad)}</h3>
+        ${basKalori ? `<span class="kalori">${esc(basKalori)} kcal</span>` : ""}
+      </div>
+      ${u.aciklama ? `<p class="urun-aciklama">${esc(u.aciklama)}</p>` : ""}
       ${porsiyonHtml}
       ${cikarHtml}
       ${ekleHtml}
       <div class="urun-alt">
         <span class="fiyat">${basFiyat} ₺</span>
-        <button class="ekle-btn">Sepete Ekle</button>
+        <button class="ekle-btn">＋ Sepete Ekle</button>
       </div>
     </div>`;
 
@@ -105,7 +139,22 @@ function urunKarti(u) {
   return div;
 }
 
-// Karttaki fiyat gösterimini porsiyon + seçili eklemelere göre güncelle
+// Kategori şeridi kaydırma takibi
+function scrollSpy() {
+  const chipler = [...document.querySelectorAll(".kat-chip")];
+  const nav = $("katNav");
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (!e.isIntersecting) return;
+      const id = e.target.id;
+      chipler.forEach((ch) => ch.classList.toggle("aktif", ch.dataset.hedef === id));
+      const aktif = chipler.find((ch) => ch.dataset.hedef === id);
+      if (aktif) nav.scrollTo({ left: aktif.offsetLeft - 16, behavior: "smooth" });
+    });
+  }, { rootMargin: "-45% 0px -50% 0px", threshold: 0 });
+  document.querySelectorAll(".kat-bolum").forEach((b) => obs.observe(b));
+}
+
 function guncelleFiyatGosterim(kart, u) {
   const sec = kart.querySelector(".porsiyon-sec");
   let fiyat = sec ? Number(sec.options[sec.selectedIndex].dataset.fiyat) : u.fiyat;
@@ -130,7 +179,7 @@ function sepeteEkle(u, kart) {
   const btn = kart.querySelector(".ekle-btn");
   btn.textContent = "Eklendi ✓";
   btn.classList.add("eklendi");
-  setTimeout(() => { btn.textContent = "Sepete Ekle"; btn.classList.remove("eklendi"); }, 1000);
+  setTimeout(() => { btn.textContent = "＋ Sepete Ekle"; btn.classList.remove("eklendi"); }, 1000);
 }
 
 function toplamlar() {
