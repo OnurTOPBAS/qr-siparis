@@ -1,0 +1,38 @@
+[
+  {
+    "kategori": "Et Ürünleri",
+    "urunler": [
+      { "id": 1, "ad": "Et Tantuni Dürüm", "fiyat": 170, "resim": "img/et-durum.jpg", "aciklama": "Lavaş ekmeği, maydanoz, soğan ve domates" },
+      { "id": 2, "ad": "Et Tantuni Ekmek", "fiyat": 190, "resim": "img/et-ekmek.jpg", "aciklama": "Yarım ekmek arası özel tantuni" },
+      { "id": 3, "ad": "Et Tanburger", "fiyat": 300, "resim": "img/et-burger.jpg", "aciklama": "Özel tantuni etiyle burger lezzeti" }
+    ]
+  },
+  {
+    "kategori": "Tavuk Ürünleri",
+    "urunler": [
+      { "id": 4, "ad": "Tavuk Tantuni Dürüm", "fiyat": 160, "resim": "img/tavuk-durum.jpg", "aciklama": "Klasik lavaş dürüm lezzeti" },
+      { "id": 5, "ad": "Tavuk Tantuni Ekmek", "fiyat": 180, "resim": "img/tavuk-ekmek.jpg", "aciklama": "Yarım ekmek arası tavuk tantuni" },
+      { "id": 6, "ad": "Tavuk Tanburger", "fiyat": 280, "resim": "img/tavuk-burger.jpg", "aciklama": "Tavuk tantunili burger" }
+    ]
+  },
+  {
+    "kategori": "Yan Ürünler",
+    "urunler": [
+      { "id": 7, "ad": "Patates Kızartması", "fiyat": 90, "resim": "img/patates.jpg", "aciklama": "Çıtır patates" },
+      { "id": 8, "ad": "Yoğurtlu", "fiyat": 110, "resim": "img/yogurtlu.jpg", "aciklama": "Yoğurtlu porsiyon" }
+    ]
+  },
+  {
+    "kategori": "İçecekler",
+    "urunler": [
+      { "id": 9, "ad": "Ayran", "fiyat": 30, "resim": "img/ayran.jpg", "aciklama": "Soğuk ayran" },
+      { "id": 10, "ad": "Şalgam", "fiyat": 35, "resim": "img/salgam.jpg", "aciklama": "Acılı / acısız" },
+      { "id": 11, "ad": "Kola", "fiyat": 45, "resim": "img/kola.jpg", "aciklama": "330 ml" },
+      { "id": 12, "ad": "Fanta", "fiyat": 45, "resim": "img/fanta.jpg", "aciklama": "330 ml" },
+      { "id": 13, "ad": "Sprite", "fiyat": 45, "resim": "img/sprite.jpg", "aciklama": "330 ml" },
+      { "id": 14, "ad": "Soda", "fiyat": 30, "resim": "img/soda.jpg", "aciklama": "Sade / meyveli" },
+      { "id": 15, "ad": "Ice Tea", "fiyat": 45, "resim": "img/icetea.jpg", "aciklama": "Şeftali / limon" },
+      { "id": 16, "ad": "Su", "fiyat": 15, "resim": "img/su.jpg", "aciklama": "0.5 lt" }
+    ]
+  }
+]

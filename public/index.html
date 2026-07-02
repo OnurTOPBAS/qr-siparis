@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suat Usta Tantuni — Menü</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Suat Usta Tantuni</div>
+    <div class="masa-bilgi">Masa: <span id="masaNo">-</span></div>
+  </header>
+
+  <main id="menu" class="menu"></main>
+
+  <!-- Sepet çubuğu -->
+  <button id="sepetBtn" class="sepet-btn" hidden>
+    Sepeti Gör (<span id="sepetAdet">0</span>) — <span id="sepetToplam">0</span> ₺
+  </button>
+
+  <!-- Sepet paneli -->
+  <div id="sepetPanel" class="panel" hidden>
+    <div class="panel-ic">
+      <div class="panel-baslik">
+        <h2>Sepetim</h2>
+        <button id="kapatBtn" class="kapat">✕</button>
+      </div>
+      <div id="sepetListe" class="sepet-liste"></div>
+      <label class="not-alani">
+        Sipariş notu (opsiyonel)
+        <textarea id="not" placeholder="Örn: Soğansız olsun, acılı istiyorum..."></textarea>
+      </label>
+      <div class="panel-toplam">Toplam: <strong><span id="panelToplam">0</span> ₺</strong></div>
+      <button id="siparisVerBtn" class="siparis-btn">Siparişi Gönder</button>
+    </div>
+  </div>
+
+  <!-- Onay ekranı -->
+  <div id="onay" class="onay" hidden>
+    <div class="onay-ic">
+      <div class="onay-tik">✓</div>
+      <h2>Siparişiniz alındı!</h2>
+      <p>Masa <strong id="onayMasa"></strong> için siparişiniz mutfağa iletildi.</p>
+      <button id="onayKapat" class="siparis-btn">Menüye Dön</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
