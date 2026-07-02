@@ -72,7 +72,8 @@ function kartEkle(o, yeniMi) {
   const urunler = o.urunler.map((u) => {
     const porsiyon = u.porsiyon ? ` <span class="k-porsiyon">${esc(u.porsiyon)}</span>` : "";
     const cikar = (u.cikarilan && u.cikarilan.length) ? `<div class="k-cikar">🚫 ${esc(u.cikarilan.join(", "))}</div>` : "";
-    return `<li><span class="adet">${u.adet}×</span> ${esc(u.ad)}${porsiyon}${cikar}</li>`;
+    const ekle = (u.eklenen && u.eklenen.length) ? `<div class="k-ekle">➕ ${esc(u.eklenen.map((e) => e.ad).join(", "))}</div>` : "";
+    return `<li><span class="adet">${u.adet}×</span> ${esc(u.ad)}${porsiyon}${cikar}${ekle}</li>`;
   }).join("");
   const notHtml = o.not ? `<div class="not">📝 ${esc(o.not)}</div>` : "";
   kart.innerHTML = `

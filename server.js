@@ -103,6 +103,9 @@ const kalemleriDuzenle = (urunler) =>
     cikarilan: Array.isArray(u.cikarilan)
       ? u.cikarilan.slice(0, 10).map((x) => String(x).slice(0, 40))
       : [],
+    eklenen: Array.isArray(u.eklenen)
+      ? u.eklenen.slice(0, 10).map((e) => ({ ad: String(e.ad || "").slice(0, 40), fiyat: Number(e.fiyat) || 0 }))
+      : [],
     adet: Math.max(1, parseInt(u.adet, 10) || 1),
     fiyat: Number(u.fiyat) || 0,
   }));
@@ -211,6 +214,11 @@ app.post("/api/admin/menu/urun", girisGerekli, (req, res) => {
   const cikarilabilir = Array.isArray(g.cikarilabilir)
     ? g.cikarilabilir.map((x) => String(x).slice(0, 40)).filter(Boolean)
     : [];
+  const eklenebilir = Array.isArray(g.eklenebilir)
+    ? g.eklenebilir
+        .map((e) => ({ ad: String(e.ad || "").slice(0, 40), fiyat: Number(e.fiyat) || 0 }))
+        .filter((e) => e.ad)
+    : [];
 
   if (g.id) {
     const u = menu.urunler.find((x) => x.id === Number(g.id));
@@ -222,11 +230,13 @@ app.post("/api/admin/menu/urun", girisGerekli, (req, res) => {
     if (u.resim === undefined) u.resim = "";
     if (porsiyonlar.length) u.porsiyonlar = porsiyonlar;
     if (cikarilabilir.length) u.cikarilabilir = cikarilabilir;
+    if (eklenebilir.length) u.eklenebilir = eklenebilir;
   } else {
     const yeniId = menu.urunler.reduce((m, x) => Math.max(m, x.id), 0) + 1;
     const yeni = { id: yeniId, ...temel, resim: g.resim || "" };
     if (porsiyonlar.length) yeni.porsiyonlar = porsiyonlar;
     if (cikarilabilir.length) yeni.cikarilabilir = cikarilabilir;
+    if (eklenebilir.length) yeni.eklenebilir = eklenebilir;
     menu.urunler.push(yeni);
   }
   yaz(MENU_PATH, menu);

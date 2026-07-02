@@ -11,14 +11,16 @@
   color: #1c1c1c; cursor: pointer; font-weight: 600;
 }
 
-/* Çıkarılacak malzemeler */
-.cikar-grup { margin: 6px 0 4px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.cikar-baslik { font-size: .75rem; color: #999; width: 100%; }
-.cikar-chip {
+/* Çıkarma / ekleme malzeme grupları */
+.ozel-grup { margin: 6px 0 4px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ozel-baslik { font-size: .75rem; color: #999; width: 100%; }
+.cikar-chip, .ekle-chip {
   border: 1px solid #ddd; background: #fafafa; color: #555; border-radius: 16px;
   padding: 4px 11px; font-size: .8rem; cursor: pointer; font-family: inherit;
 }
 .cikar-chip.aktif { background: #ffe3e3; border-color: #e74c3c; color: #c0392b; text-decoration: line-through; }
+.ekle-chip.aktif { background: #e3f6e8; border-color: #2ecc71; color: #1e8449; font-weight: 600; }
+.s-ekle { font-size: .75rem; color: #1e8449; }
 
 /* Sepete ekle butonu */
 .ekle-btn {

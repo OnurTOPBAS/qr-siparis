@@ -53,6 +53,7 @@ body {
 .urunler .adet { color: var(--sari); font-weight: 700; margin-right: 4px; }
 .k-porsiyon { color: #4aa3df; font-weight: 600; font-size: .85rem; }
 .k-cikar { color: #e67e22; font-size: .8rem; margin-left: 22px; }
+.k-ekle { color: #2ecc71; font-size: .8rem; margin-left: 22px; }
 .not {
   background: #2d2a1a; border: 1px solid #4a4426; color: #f5d97a;
   padding: 10px; border-radius: 8px; margin: 10px 0; font-size: .9rem; line-height: 1.4;

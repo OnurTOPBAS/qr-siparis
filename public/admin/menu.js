@@ -68,6 +68,19 @@ function porsiyonSatiri(p = {}) {
 }
 $("porsiyonEkle").onclick = () => $("porsiyonListe").appendChild(porsiyonSatiri());
 
+// --- Ekstra (eklenebilir) malzeme satırı ---
+function ekstraSatiri(e = {}) {
+  const div = document.createElement("div");
+  div.className = "porsiyon-satir ekstra-satir";
+  div.innerHTML = `
+    <input class="e-ad" placeholder="Ekstra (Kaşar)" value="${esc(e.ad || "")}" />
+    <input class="e-fiyat" type="number" min="0" placeholder="₺" value="${e.fiyat ?? ""}" />
+    <button type="button" class="p-sil">✕</button>`;
+  div.querySelector(".p-sil").onclick = () => div.remove();
+  return div;
+}
+$("ekstraEkle").onclick = () => $("ekstraListe").appendChild(ekstraSatiri());
+
 // --- Modal ---
 function modalAc(u) {
   $("hata").textContent = "";
@@ -91,6 +104,11 @@ function modalAc(u) {
   // Çıkarılabilir malzemeler
   const secili = new Set(u?.cikarilabilir || []);
   document.querySelectorAll(".mal").forEach((cb) => (cb.checked = secili.has(cb.value)));
+
+  // Eklenebilir ekstralar
+  const el = $("ekstraListe");
+  el.innerHTML = "";
+  (u?.eklenebilir || []).forEach((e) => el.appendChild(ekstraSatiri(e)));
 
   $("modal").hidden = false;
 }
@@ -126,6 +144,10 @@ $("form").onsubmit = async (e) => {
 
   const cikarilabilir = [...document.querySelectorAll(".mal:checked")].map((cb) => cb.value);
 
+  const eklenebilir = [...document.querySelectorAll(".ekstra-satir")]
+    .map((row) => ({ ad: row.querySelector(".e-ad").value.trim(), fiyat: Number(row.querySelector(".e-fiyat").value) || 0 }))
+    .filter((e) => e.ad);
+
   const govde = {
     id: $("urunId").value ? Number($("urunId").value) : null,
     ad: $("ad").value.trim(),
@@ -136,6 +158,7 @@ $("form").onsubmit = async (e) => {
     resim: $("resim").value,
     porsiyonlar,
     cikarilabilir,
+    eklenebilir,
   };
 
   const r = await fetch("/api/admin/menu/urun", {

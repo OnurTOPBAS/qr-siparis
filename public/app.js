@@ -4,7 +4,7 @@ const masa = params.get("masa") || "1";
 document.getElementById("masaNo").textContent = masa;
 
 let menu = [];
-// sepet: key -> { urun, porsiyon, cikarilan[], birimFiyat, adet }
+// sepet: key -> { urun, porsiyon, cikarilan[], eklenen[{ad,fiyat}], birimFiyat, adet }
 const sepet = new Map();
 
 let duzenlenenId = null;
@@ -17,8 +17,9 @@ const aktifYaz = (v) => localStorage.setItem(LS_KEY, JSON.stringify(v));
 const aktifSil = () => localStorage.removeItem(LS_KEY);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-// Sepet anahtarı: aynı ürün + porsiyon + çıkarılanlar = tek satır
-const anahtar = (id, porsiyon, cikarilan) => `${id}|${porsiyon || ""}|${[...cikarilan].sort().join(",")}`;
+// Sepet anahtarı: aynı ürün + porsiyon + çıkarılan + eklenen = tek satır
+const anahtar = (id, porsiyon, cikarilan, eklenen) =>
+  `${id}|${porsiyon || ""}|${[...cikarilan].sort().join(",")}|${eklenen.map((e) => e.ad).sort().join(",")}`;
 
 // --- Menüyü yükle ve ekrana bas ---
 fetch("/api/menu")
@@ -27,7 +28,6 @@ fetch("/api/menu")
     menu = data.urunler || [];
     const c = $("menu");
     c.innerHTML = "";
-
     const kategoriler = [];
     const grup = new Map();
     menu.forEach((u) => {
@@ -35,7 +35,6 @@ fetch("/api/menu")
       if (!grup.has(k)) { grup.set(k, []); kategoriler.push(k); }
       grup.get(k).push(u);
     });
-
     kategoriler.forEach((katAd) => {
       const h = document.createElement("h2");
       h.className = "kategori";
@@ -43,7 +42,6 @@ fetch("/api/menu")
       c.appendChild(h);
       grup.get(katAd).forEach((u) => c.appendChild(urunKarti(u)));
     });
-
     aktifSiparisiKontrolEt();
   });
 
@@ -53,9 +51,8 @@ function urunKarti(u) {
   div.dataset.id = u.id;
 
   const porsiyonlu = Array.isArray(u.porsiyonlar) && u.porsiyonlar.length > 0;
-  const ilk = porsiyonlu ? u.porsiyonlar[0] : null;
-  const basFiyat = porsiyonlu ? ilk.fiyat : u.fiyat;
-  const basKalori = porsiyonlu ? ilk.kalori : u.kalori;
+  const basFiyat = porsiyonlu ? u.porsiyonlar[0].fiyat : u.fiyat;
+  const basKalori = (porsiyonlu && u.porsiyonlar[0].kalori) || u.kalori || "";
 
   const resimHtml = u.resim ? `<img src="/${esc(u.resim)}" alt="${esc(u.ad)}" onerror="this.style.display='none'">` : "";
 
@@ -66,9 +63,16 @@ function urunKarti(u) {
     : "";
 
   const cikarHtml = Array.isArray(u.cikarilabilir) && u.cikarilabilir.length
-    ? `<div class="cikar-grup">
-        <span class="cikar-baslik">İstemediklerin:</span>
+    ? `<div class="ozel-grup">
+        <span class="ozel-baslik">İstemediklerin:</span>
         ${u.cikarilabilir.map((m) => `<button type="button" class="cikar-chip" data-mal="${esc(m)}">${esc(m)}</button>`).join("")}
+      </div>`
+    : "";
+
+  const ekleHtml = Array.isArray(u.eklenebilir) && u.eklenebilir.length
+    ? `<div class="ozel-grup">
+        <span class="ozel-baslik">Ekstra ekle:</span>
+        ${u.eklenebilir.map((e) => `<button type="button" class="ekle-chip" data-ad="${esc(e.ad)}" data-fiyat="${e.fiyat}">+ ${esc(e.ad)}${e.fiyat ? " (" + e.fiyat + "₺)" : ""}</button>`).join("")}
       </div>`
     : "";
 
@@ -79,41 +83,48 @@ function urunKarti(u) {
       ${u.aciklama ? `<p>${esc(u.aciklama)}</p>` : ""}
       ${porsiyonHtml}
       ${cikarHtml}
+      ${ekleHtml}
       <div class="urun-alt">
         <span class="fiyat">${basFiyat} ₺</span>
         <button class="ekle-btn">Sepete Ekle</button>
       </div>
     </div>`;
 
-  // Porsiyon değişince fiyat + kalori güncelle
   const sec = div.querySelector(".porsiyon-sec");
   if (sec) {
     sec.onchange = () => {
       const opt = sec.options[sec.selectedIndex];
-      div.querySelector(".fiyat").textContent = opt.dataset.fiyat + " ₺";
+      guncelleFiyatGosterim(div, u);
       const kal = div.querySelector(".kalori");
-      if (kal) kal.textContent = (opt.dataset.kalori || "") + (opt.dataset.kalori ? " kcal" : "");
+      if (kal && opt.dataset.kalori) kal.textContent = opt.dataset.kalori + " kcal";
     };
   }
-  // Çıkar chip toggle
-  div.querySelectorAll(".cikar-chip").forEach((chip) => {
-    chip.onclick = () => chip.classList.toggle("aktif");
-  });
-  // Sepete ekle
+  div.querySelectorAll(".cikar-chip").forEach((chip) => (chip.onclick = () => chip.classList.toggle("aktif")));
+  div.querySelectorAll(".ekle-chip").forEach((chip) => (chip.onclick = () => { chip.classList.toggle("aktif"); guncelleFiyatGosterim(div, u); }));
   div.querySelector(".ekle-btn").onclick = () => sepeteEkle(u, div);
   return div;
+}
+
+// Karttaki fiyat gösterimini porsiyon + seçili eklemelere göre güncelle
+function guncelleFiyatGosterim(kart, u) {
+  const sec = kart.querySelector(".porsiyon-sec");
+  let fiyat = sec ? Number(sec.options[sec.selectedIndex].dataset.fiyat) : u.fiyat;
+  kart.querySelectorAll(".ekle-chip.aktif").forEach((c) => (fiyat += Number(c.dataset.fiyat) || 0));
+  kart.querySelector(".fiyat").textContent = fiyat + " ₺";
 }
 
 function sepeteEkle(u, kart) {
   const sec = kart.querySelector(".porsiyon-sec");
   const porsiyon = sec ? sec.value : null;
-  const birimFiyat = sec ? Number(sec.options[sec.selectedIndex].dataset.fiyat) : u.fiyat;
+  const porsiyonFiyat = sec ? Number(sec.options[sec.selectedIndex].dataset.fiyat) : u.fiyat;
   const cikarilan = [...kart.querySelectorAll(".cikar-chip.aktif")].map((c) => c.dataset.mal);
+  const eklenen = [...kart.querySelectorAll(".ekle-chip.aktif")].map((c) => ({ ad: c.dataset.ad, fiyat: Number(c.dataset.fiyat) || 0 }));
+  const birimFiyat = porsiyonFiyat + eklenen.reduce((s, e) => s + e.fiyat, 0);
 
-  const k = anahtar(u.id, porsiyon, cikarilan);
+  const k = anahtar(u.id, porsiyon, cikarilan, eklenen);
   const mevcut = sepet.get(k);
   if (mevcut) mevcut.adet += 1;
-  else sepet.set(k, { urun: u, porsiyon, cikarilan, birimFiyat, adet: 1 });
+  else sepet.set(k, { urun: u, porsiyon, cikarilan, eklenen, birimFiyat, adet: 1 });
 
   guncelleSepetCubugu();
   const btn = kart.querySelector(".ekle-btn");
@@ -145,10 +156,12 @@ function cizSepet() {
   for (const [k, e] of sepet.entries()) {
     const row = document.createElement("div");
     row.className = "sepet-satir";
+    const ekstra = e.eklenen.length ? `<span class="s-ekle">+ ${esc(e.eklenen.map((x) => x.ad).join(", "))}</span>` : "";
+    const cikar = e.cikarilan.length ? `<span class="s-cikar">Çıkar: ${esc(e.cikarilan.join(", "))}</span>` : "";
     row.innerHTML = `
       <div class="s-sol">
         <span class="s-ad">${esc(e.urun.ad)}${e.porsiyon ? " • " + esc(e.porsiyon) : ""}</span>
-        ${e.cikarilan.length ? `<span class="s-cikar">Çıkar: ${esc(e.cikarilan.join(", "))}</span>` : ""}
+        ${cikar}${ekstra}
       </div>
       <div class="adet-kontrol">
         <button class="eksi">−</button>
@@ -176,7 +189,7 @@ $("siparisVerBtn").onclick = async () => {
   btn.disabled = true;
   btn.textContent = duzenlenenId ? "Kaydediliyor..." : "Gönderiliyor...";
   const urunler = [...sepet.values()].map((e) => ({
-    id: e.urun.id, ad: e.urun.ad, porsiyon: e.porsiyon, cikarilan: e.cikarilan, adet: e.adet, fiyat: e.birimFiyat,
+    id: e.urun.id, ad: e.urun.ad, porsiyon: e.porsiyon, cikarilan: e.cikarilan, eklenen: e.eklenen, adet: e.adet, fiyat: e.birimFiyat,
   }));
   const not = $("not").value.trim();
 
@@ -257,8 +270,9 @@ async function duzenlemeBaslat() {
   o.urunler.forEach((it) => {
     const urun = menu.find((m) => m.id === it.id) || { id: it.id, ad: it.ad };
     const cikarilan = it.cikarilan || [];
-    const k = anahtar(it.id, it.porsiyon, cikarilan);
-    sepet.set(k, { urun, porsiyon: it.porsiyon || null, cikarilan, birimFiyat: it.fiyat, adet: it.adet });
+    const eklenen = it.eklenen || [];
+    const k = anahtar(it.id, it.porsiyon, cikarilan, eklenen);
+    sepet.set(k, { urun, porsiyon: it.porsiyon || null, cikarilan, eklenen, birimFiyat: it.fiyat, adet: it.adet });
   });
   $("not").value = o.not || "";
   duzenlenenId = a.id;
