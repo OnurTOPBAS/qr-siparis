@@ -62,3 +62,27 @@ body {
   padding: 9px 14px; border-radius: 10px; cursor: pointer;
 }
 .hazir-btn:active { transform: scale(.96); }
+
+/* --- Raporlar --- */
+a.ses-btn { text-decoration: none; display: inline-block; }
+.sekmeler { display: flex; gap: 8px; padding: 16px 20px 0; flex-wrap: wrap; }
+.sekme {
+  border: none; background: #1c1f26; color: #aaa; padding: 10px 18px;
+  border-radius: 10px 10px 0 0; cursor: pointer; font-weight: 600; font-size: .95rem;
+}
+.sekme.aktif { background: var(--sari); color: #241f00; }
+
+.rapor-govde { padding: 16px 20px 40px; max-width: 800px; }
+.ozet-kartlar { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.ozet-kart { background: #1c1f26; border-radius: 14px; padding: 18px; border-left: 5px solid var(--sari); }
+.ozet-baslik { display: block; color: #999; font-size: .85rem; margin-bottom: 6px; }
+.ozet-deger { font-size: 1.6rem; font-weight: 700; color: #fff; }
+
+.tablo-baslik { font-size: 1.1rem; margin-bottom: 12px; color: var(--sari); }
+.rapor-tablo { width: 100%; border-collapse: collapse; background: #1c1f26; border-radius: 12px; overflow: hidden; }
+.rapor-tablo th, .rapor-tablo td { padding: 12px 14px; text-align: left; border-bottom: 1px solid #2a2d34; }
+.rapor-tablo th { background: #23262e; color: #bbb; font-size: .85rem; }
+.rapor-tablo td { font-size: .95rem; }
+.rapor-tablo .sag { text-align: right; }
+.rapor-tablo tbody tr:last-child td { border-bottom: none; }
+.rapor-tablo tbody tr:hover { background: #23262e; }

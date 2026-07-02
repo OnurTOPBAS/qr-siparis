@@ -45,6 +45,8 @@ loadOrders();
 app.get("/", (_req, res) => res.sendFile(join(__dirname, "public", "index.html")));
 // Kasa / admin paneli
 app.get("/admin", (_req, res) => res.sendFile(join(__dirname, "public", "admin.html")));
+// Satış raporları
+app.get("/admin/rapor", (_req, res) => res.sendFile(join(__dirname, "public", "rapor.html")));
 
 // Menüyü ver
 app.get("/api/menu", (_req, res) => {
@@ -82,6 +84,41 @@ app.post("/api/order", (req, res) => {
 
   io.emit("newOrder", order); // kasadaki tüm admin panellerine anında düş
   res.status(201).json({ ok: true, id: order.id });
+});
+
+// Satış raporu: günlük / haftalık / aylık (bu gün / bu hafta / bu ay)
+app.get("/api/report", (_req, res) => {
+  const now = new Date();
+  const gunBasi = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  // Haftanın başı = Pazartesi
+  const gun = now.getDay(); // 0=Pazar ... 6=Cumartesi
+  const pazartesiFarki = gun === 0 ? 6 : gun - 1;
+  const haftaBasi = new Date(gunBasi);
+  haftaBasi.setDate(gunBasi.getDate() - pazartesiFarki);
+  const ayBasi = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  function ozet(baslangic) {
+    const filt = orders.filter((o) => new Date(o.tarih) >= baslangic);
+    const urunMap = new Map();
+    let ciro = 0;
+    for (const o of filt) {
+      ciro += o.toplam;
+      for (const u of o.urunler) {
+        const k = urunMap.get(u.ad) || { ad: u.ad, adet: 0, ciro: 0 };
+        k.adet += u.adet;
+        k.ciro += u.fiyat * u.adet;
+        urunMap.set(u.ad, k);
+      }
+    }
+    const urunler = [...urunMap.values()].sort((a, b) => b.adet - a.adet);
+    return { ciro, siparis: filt.length, urunler };
+  }
+
+  res.json({
+    gunluk: ozet(gunBasi),
+    haftalik: ozet(haftaBasi),
+    aylik: ozet(ayBasi),
+  });
 });
 
 // --- Socket.io (canlı bildirim) ---

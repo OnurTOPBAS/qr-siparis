@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Satış Raporları</title>
+  <link rel="stylesheet" href="/admin.css" />
+</head>
+<body>
+  <header class="admin-top">
+    <h1>📊 Satış Raporları</h1>
+    <div class="durum">
+      <a href="/admin" class="ses-btn">🔔 Siparişlere Dön</a>
+      <button id="yenile" class="ses-btn">↻ Yenile</button>
+    </div>
+  </header>
+
+  <div class="sekmeler">
+    <button class="sekme aktif" data-p="gunluk">Günlük (Bugün)</button>
+    <button class="sekme" data-p="haftalik">Haftalık (Bu Hafta)</button>
+    <button class="sekme" data-p="aylik">Aylık (Bu Ay)</button>
+  </div>
+
+  <main class="rapor-govde">
+    <div class="ozet-kartlar">
+      <div class="ozet-kart">
+        <span class="ozet-baslik">Toplam Ciro</span>
+        <span class="ozet-deger" id="ciro">0 ₺</span>
+      </div>
+      <div class="ozet-kart">
+        <span class="ozet-baslik">Sipariş Sayısı</span>
+        <span class="ozet-deger" id="siparis">0</span>
+      </div>
+      <div class="ozet-kart">
+        <span class="ozet-baslik">Satılan Ürün Çeşidi</span>
+        <span class="ozet-deger" id="cesit">0</span>
+      </div>
+    </div>
+
+    <h2 class="tablo-baslik">Ürün Bazında Satış</h2>
+    <table class="rapor-tablo">
+      <thead>
+        <tr><th>#</th><th>Ürün</th><th class="sag">Adet</th><th class="sag">Ciro</th></tr>
+      </thead>
+      <tbody id="tabloGovde"></tbody>
+    </table>
+    <div id="bosRapor" class="bos" hidden>Bu dönemde henüz satış yok.</div>
+  </main>
+
+  <script src="/rapor.js"></script>
+</body>
+</html>
