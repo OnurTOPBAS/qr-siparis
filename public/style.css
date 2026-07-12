@@ -27,16 +27,18 @@ body {
 /* ===== HERO ===== */
 .hero {
   position: relative;
-  min-height: 44vh;
+  min-height: 60vh;
   display: flex;
   align-items: flex-end;
-  border-radius: 0 0 28px 28px;
+  border-radius: 0 0 30px 30px;
   overflow: hidden;
+  background: #140c08;
 }
 .hero-bg {
   position: absolute; inset: 0;
   background: url("img/manset.jpg") center/cover no-repeat;
   transform: scale(1.05);
+  filter: brightness(.42) saturate(1.1) blur(2px);
   animation: kenBurns 22s ease-in-out infinite alternate;
 }
 @keyframes kenBurns {
@@ -77,10 +79,51 @@ body {
 }
 .hero-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(36,26,21,.35) 0%, rgba(36,26,21,.55) 55%, rgba(36,26,21,.92) 100%);
+  background: linear-gradient(180deg, rgba(20,12,8,.45) 0%, rgba(20,12,8,.35) 45%, rgba(20,12,8,.97) 100%);
+}
+
+/* Dev arka plan yazısı */
+.hero-wordmark {
+  position: absolute; top: 26%; left: 50%; transform: translate(-50%, -50%);
+  z-index: 1; margin: 0; pointer-events: none;
+  font-family: "Anton", sans-serif; font-weight: 400;
+  font-size: clamp(4rem, 26vw, 13rem); line-height: 1;
+  letter-spacing: .04em; white-space: nowrap;
+  color: rgba(255,255,255,.07);
+  text-transform: uppercase;
+}
+
+/* Havada süzülen dürüm */
+.hero-float {
+  position: absolute; top: 8%; left: 50%; z-index: 2;
+  width: min(52vw, 220px); aspect-ratio: 1; object-fit: cover;
+  border-radius: 50%; border: 3px solid rgba(255,255,255,.14);
+  box-shadow: 0 30px 50px rgba(0,0,0,.6), 0 0 60px rgba(230,90,20,.25);
+  animation: heroFloat 4.5s ease-in-out infinite;
+}
+@keyframes heroFloat {
+  0%, 100% { transform: translate(-50%, 0) rotate(-2.5deg); }
+  50%      { transform: translate(-50%, -16px) rotate(2.5deg); }
+}
+
+/* Kayan lezzet şeridi */
+.serit-marquee {
+  overflow: hidden; background: #1a0f0a;
+  border-bottom: 1px solid rgba(246,168,33,.18);
+  padding: 11px 0;
+}
+.serit-track { display: inline-flex; align-items: center; white-space: nowrap; animation: seritKay 24s linear infinite; }
+.serit-track span {
+  font-family: "Anton", sans-serif; font-size: .92rem; letter-spacing: .14em;
+  color: var(--amber); padding: 0 20px; text-transform: uppercase;
+}
+.serit-track i { color: var(--kirmizi); font-style: normal; font-size: .55rem; }
+@keyframes seritKay { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .hero-float, .serit-track { animation: none; }
 }
 .hero-ic {
-  position: relative; z-index: 2;
+  position: relative; z-index: 3;
   padding: 24px 22px 30px;
   color: #fff;
   width: 100%;
