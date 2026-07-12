@@ -35,12 +35,11 @@ body {
 }
 .hero-bg {
   position: absolute; inset: 0;
-  background: url("img/manset.jpg") center/cover no-repeat;
-  transform: scale(1.05);
+  background: linear-gradient(150deg, #e0641f 0%, #c0392b 50%, #7a1c14 100%);
 }
 .hero-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(36,26,21,.35) 0%, rgba(36,26,21,.55) 55%, rgba(36,26,21,.92) 100%);
+  background: linear-gradient(180deg, rgba(0,0,0,.06) 0%, rgba(60,15,10,.18) 70%, rgba(60,15,10,.34) 100%);
 }
 .hero-ic {
   position: relative; z-index: 2;
