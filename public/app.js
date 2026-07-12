@@ -3,25 +3,6 @@ const params = new URLSearchParams(location.search);
 const masa = params.get("masa") || "1";
 document.getElementById("masaNo").textContent = masa;
 
-// Köz kıvılcımları (hero'da yükselen közler)
-(function kozOlustur() {
-  const kat = document.getElementById("kozLayer");
-  if (!kat) return;
-  const yuk = kat.clientHeight || 340;
-  for (let i = 0; i < 26; i++) {
-    const e = document.createElement("span");
-    e.className = "ember";
-    const boyut = 3 + Math.random() * 6;
-    e.style.left = Math.random() * 100 + "%";
-    e.style.width = e.style.height = boyut + "px";
-    e.style.setProperty("--kayma", (Math.random() * 70 - 35) + "px");
-    e.style.setProperty("--yuk", (yuk + 20) + "px");
-    e.style.animationDuration = (3 + Math.random() * 4).toFixed(2) + "s";
-    e.style.animationDelay = (Math.random() * 6).toFixed(2) + "s";
-    kat.appendChild(e);
-  }
-})();
-
 let menu = [];
 // sepet: key -> { urun, porsiyon, cikarilan[], eklenen[{ad,fiyat}], birimFiyat, adet }
 const sepet = new Map();
