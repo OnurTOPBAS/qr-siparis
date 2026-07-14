@@ -38,6 +38,44 @@ function bipCal() {
   });
 }
 
+// --- Termal fiş yazdırma ---
+let otoYazdir = localStorage.getItem("otoYazdir") === "1";
+guncelleYazdirBtn();
+$("otoYazdir").onclick = () => {
+  otoYazdir = !otoYazdir;
+  localStorage.setItem("otoYazdir", otoYazdir ? "1" : "0");
+  guncelleYazdirBtn();
+};
+function guncelleYazdirBtn() {
+  const b = $("otoYazdir");
+  b.textContent = otoYazdir ? "🖨️ Oto Yazdır: Açık" : "🖨️ Oto Yazdır: Kapalı";
+  b.classList.toggle("aktif", otoYazdir);
+}
+
+function fisYazdir(o) {
+  const saat = new Date(o.tarih).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  const satirlar = o.urunler.map((u) => {
+    const bas = `${u.adet}x ${u.ad}${u.porsiyon ? " (" + u.porsiyon + ")" : ""}`;
+    let alt = "";
+    if (u.cikarilan && u.cikarilan.length) alt += `<div class="fs-not">- ${esc(u.cikarilan.join(", "))} YOK</div>`;
+    if (u.eklenen && u.eklenen.length) alt += `<div class="fs-not">+ ${esc(u.eklenen.map((e) => e.ad).join(", "))}</div>`;
+    return `<div class="fs-satir"><span>${esc(bas)}</span><span>${u.fiyat * u.adet} TL</span></div>${alt}`;
+  }).join("");
+  $("fis").innerHTML = `
+    <div class="fs-baslik">SUAT USTA TANTUNI</div>
+    <div class="fs-orta">SIPARIS FISI</div>
+    <div class="fs-cizgi"></div>
+    <div class="fs-satir"><b>MASA ${esc(o.masa)}</b><span>#${o.id}</span></div>
+    <div class="fs-orta2">${saat}</div>
+    <div class="fs-cizgi"></div>
+    ${satirlar}
+    <div class="fs-cizgi"></div>
+    <div class="fs-satir fs-toplam"><span>TOPLAM</span><span>${o.toplam} TL</span></div>
+    ${o.not ? `<div class="fs-cizgi"></div><div class="fs-not2">NOT: ${esc(o.not)}</div>` : ""}
+    <div class="fs-alt-yazi">* Afiyet olsun *</div>`;
+  window.print();
+}
+
 // --- Bağlantı ---
 socket.on("connect", () => { $("baglanti").textContent = "● Bağlı"; $("baglanti").className = "rozet yesil"; });
 socket.on("disconnect", () => { $("baglanti").textContent = "○ Koptu"; $("baglanti").className = "rozet kirmizi"; });
@@ -48,7 +86,7 @@ socket.on("initOrders", (list) => {
   list.forEach((o) => kartEkle(o, false));
   guncelleSayac();
 });
-socket.on("newOrder", (o) => { kartEkle(o, true); bipCal(); guncelleSayac(); });
+socket.on("newOrder", (o) => { kartEkle(o, true); bipCal(); guncelleSayac(); if (otoYazdir) fisYazdir(o); });
 // Müşteri siparişini düzenledi → kartı güncelle (hafif vurgu, ses yok)
 socket.on("orderChanged", (o) => {
   const k = document.querySelector(`.kart[data-id="${o.id}"]`);
@@ -85,9 +123,11 @@ function kartEkle(o, yeniMi) {
     ${notHtml}
     <div class="kart-alt">
       <span class="toplam">${o.toplam} ₺</span>
+      <button class="yazdir-btn" title="Fiş yazdır">🖨️</button>
       <button class="hazir-btn">✓ Hazır / Teslim</button>
     </div>`;
   kart.querySelector(".hazir-btn").onclick = () => socket.emit("markDone", o.id);
+  kart.querySelector(".yazdir-btn").onclick = () => fisYazdir(o);
   siparislerEl.insertBefore(kart, siparislerEl.firstChild.nextSibling);
   if (yeniMi) setTimeout(() => kart.classList.remove("yeni"), 3000);
 }

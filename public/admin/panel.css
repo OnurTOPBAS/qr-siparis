@@ -66,6 +66,27 @@ body {
 .gk-urunler li:last-child { border-bottom: none; }
 .gk-alt { text-align: right; margin-top: 8px; }
 .gk-toplam { font-weight: 700; font-size: 1.05rem; color: #fff; }
+
+/* Yazdır butonu + termal fiş */
+.kart-alt .toplam { margin-right: auto; }
+.yazdir-btn { background: #2a2d34; border: none; color: #eee; border-radius: 10px; padding: 9px 12px; cursor: pointer; font-size: 1rem; margin-right: 8px; }
+.yazdir-btn:active { transform: scale(.95); }
+#fis { display: none; }
+@media print {
+  @page { size: 80mm auto; margin: 3mm; }
+  body { background: #fff !important; }
+  body > *:not(#fis) { display: none !important; }
+  #fis { display: block !important; width: 74mm; color: #000; font-family: "Courier New", monospace; font-size: 12.5px; line-height: 1.4; }
+  #fis .fs-baslik { text-align: center; font-size: 17px; font-weight: 700; letter-spacing: 1px; }
+  #fis .fs-orta { text-align: center; font-weight: 700; margin-top: 2px; }
+  #fis .fs-orta2 { text-align: center; font-size: 11px; }
+  #fis .fs-cizgi { border-top: 1px dashed #000; margin: 5px 0; }
+  #fis .fs-satir { display: flex; justify-content: space-between; gap: 8px; }
+  #fis .fs-not { padding-left: 12px; font-size: 11px; }
+  #fis .fs-toplam { font-weight: 700; font-size: 15px; }
+  #fis .fs-not2 { font-weight: 700; }
+  #fis .fs-alt-yazi { text-align: center; margin-top: 8px; }
+}
 .not {
   background: #2d2a1a; border: 1px solid #4a4426; color: #f5d97a;
   padding: 10px; border-radius: 8px; margin: 10px 0; font-size: .9rem; line-height: 1.4;
