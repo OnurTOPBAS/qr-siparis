@@ -54,6 +54,18 @@ body {
 .k-porsiyon { color: #4aa3df; font-weight: 600; font-size: .85rem; }
 .k-cikar { color: #e67e22; font-size: .8rem; margin-left: 22px; }
 .k-ekle { color: #2ecc71; font-size: .8rem; margin-left: 22px; }
+
+/* Geçmiş siparişler */
+.gecmis-kart { background: #1c1f26; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; max-width: 640px; }
+.gk-ust { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.gk-masa { font-weight: 700; color: var(--sari); }
+.gk-saat { color: #999; font-size: .85rem; }
+.gk-ust .rozet { margin-left: auto; }
+.gk-urunler { list-style: none; }
+.gk-urunler li { padding: 4px 0; border-bottom: 1px solid #2a2d34; font-size: .92rem; }
+.gk-urunler li:last-child { border-bottom: none; }
+.gk-alt { text-align: right; margin-top: 8px; }
+.gk-toplam { font-weight: 700; font-size: 1.05rem; color: #fff; }
 .not {
   background: #2d2a1a; border: 1px solid #4a4426; color: #f5d97a;
   padding: 10px; border-radius: 8px; margin: 10px 0; font-size: .9rem; line-height: 1.4;

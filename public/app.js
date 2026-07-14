@@ -80,9 +80,17 @@ fetch("/api/menu")
     aktifSiparisiKontrolEt();
   });
 
+function urunTuru(u) {
+  const s = ((u.ad || "") + " " + (u.kategori || "")).toLowerCase();
+  if (s.includes("tavuk")) return "tavuk";
+  if (u.kategori === "Et Tantuniler" || u.kategori === "Yeni Ürünler") return "et";
+  return "";
+}
+
 function urunKarti(u) {
   const div = document.createElement("div");
-  div.className = "urun";
+  const tur = urunTuru(u);
+  div.className = "urun" + (tur ? " urun--" + tur : "");
   div.dataset.id = u.id;
 
   const porsiyonlu = Array.isArray(u.porsiyonlar) && u.porsiyonlar.length > 0;

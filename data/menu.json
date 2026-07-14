@@ -2,10 +2,10 @@
   "urunler": [
     {
       "id": 1,
+      "resim": "img/et-durum.jpg",
       "ad": "Et Dürüm Tantuni",
       "kategori": "Et Tantuniler",
       "fiyat": 370,
-      "resim": "img/et-durum.jpg",
       "aciklama": "",
       "kalori": "460-670",
       "cikarilabilir": [

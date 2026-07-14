@@ -190,6 +190,7 @@ app.get("/admin", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "siparis
 app.get("/admin/menu", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "menu.html")));
 app.get("/admin/masalar", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "masalar.html")));
 app.get("/admin/rapor", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "rapor.html")));
+app.get("/admin/gecmis", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "gecmis.html")));
 
 // --- Menü yönetimi ---
 app.get("/api/admin/menu", girisGerekli, (_req, res) => res.json(oku(MENU_PATH, { urunler: [] })));
@@ -311,6 +312,17 @@ app.get("/api/report", girisGerekli, (_req, res) => {
     return { ciro, siparis: filt.length, urunler: [...map.values()].sort((a, b) => b.adet - a.adet) };
   };
   res.json({ gunluk: ozet(gunBasi), haftalik: ozet(haftaBasi), aylik: ozet(ayBasi) });
+});
+
+// Günün geçmiş siparişleri (bugün, tüm durumlar)
+app.get("/api/admin/gecmis", girisGerekli, (_req, res) => {
+  const now = new Date();
+  const gunBasi = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const bugun = orders
+    .filter((o) => new Date(o.tarih) >= gunBasi)
+    .map(gizle)
+    .sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
+  res.json({ siparisler: bugun, adet: bugun.length, ciro: bugun.reduce((s, o) => s + o.toplam, 0) });
 });
 
 // ============ SOCKET.IO ============
