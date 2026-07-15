@@ -7,8 +7,11 @@ let menu = [];
 // sepet: key -> { urun, porsiyon, cikarilan[], eklenen[{ad,fiyat}], birimFiyat, adet }
 const sepet = new Map();
 
-let duzenlenenId = null;
-let duzenlenenToken = null;
+// Aktif (gönderilmiş) sipariş + 1.5 dk düzenleme penceresi
+let aktifSiparis = null; // { id, token, deadline }
+let sayacTimer = null;
+let kaydetTimer = null;
+const DUZENLEME_SURESI = 90 * 1000; // 1.5 dakika
 
 const $ = (id) => document.getElementById(id);
 const LS_KEY = "aktifSiparis_masa_" + masa;
@@ -77,7 +80,7 @@ fetch("/api/menu")
     });
 
     scrollSpy();
-    aktifSiparisiKontrolEt();
+    aktifDurumuGeriYukle();
   });
 
 function urunTuru(u) {
@@ -184,6 +187,7 @@ function sepeteEkle(u, kart) {
   else sepet.set(k, { urun: u, porsiyon, cikarilan, eklenen, birimFiyat, adet: 1 });
 
   guncelleSepetCubugu();
+  otoKaydetTetikle(); // aktif siparişteysek değişikliği kaydet
   const btn = kart.querySelector(".ekle-btn");
   btn.textContent = "Eklendi ✓";
   btn.classList.add("eklendi");
@@ -197,14 +201,14 @@ function toplamlar() {
 }
 
 function guncelleSepetCubugu() {
-  const { adet, tutar } = toplamlar();
+  const { adet } = toplamlar();
   $("sepetAdet").textContent = adet;
-  $("sepetToplam").textContent = tutar;
-  $("sepetBtn").hidden = adet === 0;
+  // Sepet logosu: ürün varsa ya da aktif sipariş varsa görünür
+  $("sepetBtn").hidden = adet === 0 && !aktifSiparis;
 }
 
 // --- Sepet paneli ---
-$("sepetBtn").onclick = () => { cizSepet(); $("sepetPanel").hidden = false; };
+$("sepetBtn").onclick = () => { panelModunuAyarla(); if (aktifSiparis) sayacGuncelle(); cizSepet(); $("sepetPanel").hidden = false; };
 $("kapatBtn").onclick = () => ($("sepetPanel").hidden = true);
 
 function cizSepet() {
@@ -226,12 +230,13 @@ function cizSepet() {
         <button class="arti">+</button>
       </div>
       <span class="s-fiyat">${e.birimFiyat * e.adet} ₺</span>`;
-    row.querySelector(".arti").onclick = () => { e.adet += 1; guncelleSepetCubugu(); cizSepet(); };
+    row.querySelector(".arti").onclick = () => { e.adet += 1; guncelleSepetCubugu(); cizSepet(); otoKaydetTetikle(); };
     row.querySelector(".eksi").onclick = () => {
       e.adet -= 1;
       if (e.adet <= 0) sepet.delete(k);
       guncelleSepetCubugu();
       cizSepet();
+      otoKaydetTetikle();
     };
     liste.appendChild(row);
   }
@@ -239,118 +244,157 @@ function cizSepet() {
   if (sepet.size === 0) $("sepetPanel").hidden = true;
 }
 
-// --- Siparişi gönder / güncelle ---
+// --- Sepet -> sunucu formatı ---
+function sepetPayload() {
+  return [...sepet.values()].map((e) => ({
+    id: e.urun.id, ad: e.urun.ad, porsiyon: e.porsiyon, cikarilan: e.cikarilan, eklenen: e.eklenen, adet: e.adet, fiyat: e.birimFiyat,
+  }));
+}
+
+// Panel modu: yeni sepet mi, aktif sipariş mi?
+function panelModunuAyarla() {
+  const aktif = !!aktifSiparis;
+  $("panelBaslik").textContent = aktif ? "Siparişin" : "Sepetim";
+  $("panelSayac").hidden = !aktif;
+  $("siparisIptalBtn").hidden = !aktif;
+  $("siparisVerBtn").textContent = aktif ? "Değişiklikleri Kaydet" : "Siparişi Gönder";
+}
+
+// Not değişince de (aktif siparişte) kaydet
+$("not").oninput = otoKaydetTetikle;
+
+// --- Gönder / Kaydet butonu ---
 $("siparisVerBtn").onclick = async () => {
   if (sepet.size === 0) return;
   const btn = $("siparisVerBtn");
   btn.disabled = true;
-  btn.textContent = duzenlenenId ? "Kaydediliyor..." : "Gönderiliyor...";
-  const urunler = [...sepet.values()].map((e) => ({
-    id: e.urun.id, ad: e.urun.ad, porsiyon: e.porsiyon, cikarilan: e.cikarilan, eklenen: e.eklenen, adet: e.adet, fiyat: e.birimFiyat,
-  }));
-  const not = $("not").value.trim();
-
+  const eskiMetin = btn.textContent;
+  btn.textContent = aktifSiparis ? "Kaydediliyor..." : "Gönderiliyor...";
   try {
-    let r;
-    if (duzenlenenId) {
-      r = await fetch("/api/order/" + duzenlenenId, {
-        method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: duzenlenenToken, urunler, not }),
-      });
+    if (aktifSiparis) {
+      await kaydet(true);
     } else {
-      r = await fetch("/api/order", {
+      const r = await fetch("/api/order", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ masa, urunler, not }),
+        body: JSON.stringify({ masa, urunler: sepetPayload(), not: $("not").value.trim() }),
       });
+      if (!r.ok) throw new Error("gonder");
+      const d = await r.json();
+      aktifSiparis = { id: d.id, token: d.token, deadline: Date.now() + DUZENLEME_SURESI };
+      aktifYaz(aktifSiparis);
+      panelModunuAyarla();
+      sayacBaslat();
+      gosterToast("Siparişin alındı! 1.5 dk içinde ekleme/değişiklik yapabilirsin 🧡");
     }
-    if (!r.ok) { const d = await r.json().catch(() => ({})); throw new Error(d.error || "Hata"); }
-    const d = await r.json();
-    if (!duzenlenenId) aktifYaz({ id: d.id, token: d.token });
-
-    sepetiTemizle();
-    duzenlenenId = null; duzenlenenToken = null;
-    $("siparisVerBtn").textContent = "Siparişi Gönder";
-    $("sepetPanel").hidden = true;
-    $("onayMasa").textContent = masa;
-    $("onay").hidden = false;
-  } catch (e) {
-    if (String(e.message).includes("hazırlan")) {
-      aktifSil(); serdiGizle();
-      alert("Siparişiniz hazırlanmaya başladı, artık değiştirilemiyor.");
-    } else {
-      alert("İşlem başarısız, lütfen tekrar deneyin.");
-    }
+  } catch {
+    alert("İşlem başarısız, lütfen tekrar deneyin.");
+    btn.textContent = eskiMetin;
   } finally {
     btn.disabled = false;
-    if (!duzenlenenId) btn.textContent = "Siparişi Gönder";
   }
 };
 
-function sepetiTemizle() {
+// --- İptal ---
+$("siparisIptalBtn").onclick = async () => {
+  if (!aktifSiparis) return;
+  if (!confirm("Siparişini iptal etmek istiyor musun?")) return;
+  try {
+    await fetch("/api/order/" + aktifSiparis.id, {
+      method: "DELETE", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: aktifSiparis.token }),
+    });
+  } catch {}
+  kilitle();
+  gosterToast("Siparişin iptal edildi.");
+};
+
+// --- Kaydetme (aktif siparişte otomatik + manuel) ---
+function otoKaydetTetikle() {
+  if (!aktifSiparis) return;
+  clearTimeout(kaydetTimer);
+  kaydetTimer = setTimeout(() => kaydet(false), 900);
+}
+async function kaydet(manuel) {
+  if (!aktifSiparis || sepet.size === 0) return;
+  try {
+    const r = await fetch("/api/order/" + aktifSiparis.id, {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: aktifSiparis.token, urunler: sepetPayload(), not: $("not").value.trim() }),
+    });
+    if (r.status === 409) { kilitle(); gosterToast("Siparişin hazırlanıyor, artık değiştirilemiyor."); return; }
+    if (r.ok && manuel) gosterToast("Değişiklikler kaydedildi ✓");
+  } catch {}
+}
+
+// --- Geri sayım (1.5 dk) ---
+function sayacBaslat() {
+  clearInterval(sayacTimer);
+  $("sayacPill").hidden = false;
+  sayacGuncelle();
+  sayacTimer = setInterval(sayacGuncelle, 1000);
+}
+function sayacGuncelle() {
+  if (!aktifSiparis) return;
+  const kalan = Math.max(0, Math.round((aktifSiparis.deadline - Date.now()) / 1000));
+  const metin = Math.floor(kalan / 60) + ":" + String(kalan % 60).padStart(2, "0");
+  $("sayacMetin").textContent = metin;
+  $("panelSayac").innerHTML = `⏱ <b>${metin}</b> içinde ürün ekleyebilir, değiştirebilir veya not yazabilirsin.`;
+  $("sayacPill").classList.toggle("bitiyor", kalan <= 15);
+  if (kalan <= 0) sureDoldu();
+}
+async function sureDoldu() {
+  clearInterval(sayacTimer);
+  await kaydet(false); // son hali kaydet
+  kilitle();
+  gosterToast("Süre doldu — siparişin kesinleşti. Afiyet olsun! 🧡");
+}
+
+// Aktif siparişi bitir/temizle
+function kilitle() {
+  clearInterval(sayacTimer); sayacTimer = null;
+  clearTimeout(kaydetTimer);
+  aktifSiparis = null;
+  aktifSil();
   sepet.clear();
   $("not").value = "";
+  panelModunuAyarla();
   guncelleSepetCubugu();
+  $("sepetPanel").hidden = true;
+  $("sayacPill").hidden = true;
+  $("sepetBtn").hidden = true;
 }
 
-// --- Onay ekranı butonları ---
-$("onayKapat").onclick = () => { $("onay").hidden = true; aktifSiparisiKontrolEt(); };
-$("onayDuzenle").onclick = () => { $("onay").hidden = true; duzenlemeBaslat(); };
-$("onayIptal").onclick = () => { $("onay").hidden = true; siparisIptal(); };
-
-// --- Aktif sipariş şeridi ---
-$("seritDuzenle").onclick = duzenlemeBaslat;
-$("seritIptal").onclick = siparisIptal;
-const serdiGoster = () => ($("aktifSerit").hidden = false);
-const serdiGizle = () => ($("aktifSerit").hidden = true);
-
-async function aktifSiparisiKontrolEt() {
+// Sayfa açılınca aktif siparişi (süre dolmadıysa) geri yükle
+async function aktifDurumuGeriYukle() {
   const a = aktifOku();
-  if (!a) return serdiGizle();
+  if (!a || !a.deadline || Date.now() >= a.deadline) { if (a) aktifSil(); return; }
   try {
     const r = await fetch("/api/order/" + a.id);
-    if (!r.ok) { aktifSil(); return serdiGizle(); }
+    if (!r.ok) { aktifSil(); return; }
     const o = await r.json();
-    if (o.durum === "yeni") serdiGoster();
-    else { aktifSil(); serdiGizle(); }
-  } catch { serdiGizle(); }
+    if (o.durum !== "yeni") { aktifSil(); return; }
+    sepet.clear();
+    o.urunler.forEach((it) => {
+      const urun = menu.find((m) => m.id === it.id) || { id: it.id, ad: it.ad };
+      const cikarilan = it.cikarilan || [];
+      const eklenen = it.eklenen || [];
+      sepet.set(anahtar(it.id, it.porsiyon, cikarilan, eklenen), { urun, porsiyon: it.porsiyon || null, cikarilan, eklenen, birimFiyat: it.fiyat, adet: it.adet });
+    });
+    $("not").value = o.not || "";
+    aktifSiparis = a;
+    panelModunuAyarla();
+    guncelleSepetCubugu();
+    sayacBaslat();
+  } catch { aktifSil(); }
 }
 
-async function duzenlemeBaslat() {
-  const a = aktifOku();
-  if (!a) return;
-  const r = await fetch("/api/order/" + a.id);
-  if (!r.ok) { aktifSil(); serdiGizle(); return alert("Sipariş bulunamadı."); }
-  const o = await r.json();
-  if (o.durum !== "yeni") { aktifSil(); serdiGizle(); return alert("Siparişiniz hazırlanmaya başladı, artık değiştirilemiyor."); }
-
-  sepetiTemizle();
-  o.urunler.forEach((it) => {
-    const urun = menu.find((m) => m.id === it.id) || { id: it.id, ad: it.ad };
-    const cikarilan = it.cikarilan || [];
-    const eklenen = it.eklenen || [];
-    const k = anahtar(it.id, it.porsiyon, cikarilan, eklenen);
-    sepet.set(k, { urun, porsiyon: it.porsiyon || null, cikarilan, eklenen, birimFiyat: it.fiyat, adet: it.adet });
-  });
-  $("not").value = o.not || "";
-  duzenlenenId = a.id;
-  duzenlenenToken = a.token;
-  guncelleSepetCubugu();
-  $("siparisVerBtn").textContent = "Değişiklikleri Kaydet";
-  cizSepet();
-  $("sepetPanel").hidden = false;
-}
-
-async function siparisIptal() {
-  const a = aktifOku();
-  if (!a) return;
-  if (!confirm("Siparişiniz iptal edilsin mi?")) return;
-  const r = await fetch("/api/order/" + a.id, {
-    method: "DELETE", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: a.token }),
-  });
-  if (r.ok) { aktifSil(); serdiGizle(); alert("Siparişiniz iptal edildi."); }
-  else {
-    if (r.status === 409) { aktifSil(); serdiGizle(); }
-    alert("İptal edilemedi (sipariş hazırlanıyor olabilir).");
-  }
+// --- Toast bildirim ---
+let toastTimer = null;
+function gosterToast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.hidden = false;
+  requestAnimationFrame(() => t.classList.add("goster"));
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.classList.remove("goster"); setTimeout(() => (t.hidden = true), 300); }, 3400);
 }

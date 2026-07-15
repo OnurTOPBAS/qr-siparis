@@ -199,24 +199,50 @@ body {
 .alt-bilgi p { font-size: 1.1rem; font-weight: 600; color: var(--metin); margin-bottom: 4px; }
 .alt-bilgi span { font-size: .78rem; }
 
-/* ===== SEPET ÇUBUĞU ===== */
-.sepet-btn {
-  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
-  width: calc(100% - 32px); max-width: 608px;
-  display: flex; justify-content: space-between; align-items: center;
+/* ===== SEPET LOGOSU (FAB) ===== */
+.sepet-fab {
+  position: fixed; bottom: 20px; right: 18px; z-index: 30;
+  width: 62px; height: 62px; border-radius: 50%; border: none; cursor: pointer;
   background: linear-gradient(135deg, var(--kirmizi), var(--turuncu));
-  color: #fff; border: none; border-radius: 16px;
-  padding: 15px 20px; font-size: 1rem; font-weight: 700; font-family: inherit; cursor: pointer;
-  z-index: 30; box-shadow: 0 8px 24px rgba(192,57,43,.4);
+  box-shadow: 0 8px 22px rgba(192,57,43,.45);
+  display: flex; align-items: center; justify-content: center;
   animation: sepetGiris .3s ease;
 }
-@keyframes sepetGiris { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
-.sepet-sol { display: flex; align-items: center; gap: 10px; }
-.sepet-adet-daire {
-  background: #fff; color: var(--kirmizi); font-weight: 800;
-  min-width: 26px; height: 26px; border-radius: 50%;
-  display: inline-flex; align-items: center; justify-content: center; font-size: .85rem;
+.sepet-fab:active { transform: scale(.94); }
+.fab-ikon { font-size: 1.7rem; line-height: 1; }
+.fab-badge {
+  position: absolute; top: -4px; right: -4px;
+  min-width: 24px; height: 24px; padding: 0 5px; border-radius: 12px;
+  background: #fff; color: var(--kirmizi); font-weight: 800; font-size: .82rem;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,.25);
 }
+@keyframes sepetGiris { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* Geri sayım hapı (sepet logosunun üstünde) */
+.sayac-pill {
+  position: fixed; bottom: 90px; right: 18px; z-index: 30;
+  background: var(--komur); color: #fff; font-weight: 700; font-size: .82rem;
+  padding: 7px 12px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,.28);
+}
+.sayac-pill.bitiyor { background: var(--kirmizi); animation: yanip 1s ease-in-out infinite; }
+@keyframes yanip { 50% { opacity: .55; } }
+
+/* Panel içi geri sayım şeridi */
+.panel-sayac {
+  background: #fff3d6; color: #8a5a00; border: 1px solid #f0d29a;
+  border-radius: 12px; padding: 10px 12px; font-size: .88rem; margin-bottom: 12px; text-align: center;
+}
+
+/* Toast */
+.toast {
+  position: fixed; left: 50%; bottom: 96px; transform: translate(-50%, 14px);
+  z-index: 60; max-width: calc(100% - 32px);
+  background: var(--komur); color: #fff; font-weight: 600; font-size: .9rem;
+  padding: 12px 18px; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  opacity: 0; transition: opacity .3s ease, transform .3s ease; text-align: center;
+}
+.toast.goster { opacity: 1; transform: translate(-50%, 0); }
 
 /* ===== PANELLER ===== */
 .panel, .onay { position: fixed; inset: 0; z-index: 50; background: rgba(36,26,21,.55); display: flex; }

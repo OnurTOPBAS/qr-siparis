@@ -25,15 +25,6 @@
   <!-- Kategori geçiş şeridi -->
   <nav id="katNav" class="kat-nav"></nav>
 
-  <!-- Aktif sipariş şeridi -->
-  <div id="aktifSerit" class="aktif-serit" hidden>
-    <span>🧾 Aktif siparişin var</span>
-    <div class="serit-butonlar">
-      <button id="seritDuzenle" class="serit-btn">Düzenle</button>
-      <button id="seritIptal" class="serit-btn iptal">İptal</button>
-    </div>
-  </div>
-
   <main id="menuAlani" class="menu"></main>
 
   <footer class="alt-bilgi">
@@ -41,20 +32,24 @@
     <span>Suat Usta Tantuni · QR Sipariş</span>
   </footer>
 
-  <!-- Sepet çubuğu -->
-  <button id="sepetBtn" class="sepet-btn" hidden>
-    <span class="sepet-sol"><span class="sepet-adet-daire" id="sepetAdet">0</span> Sepetim</span>
-    <span class="sepet-sag"><span id="sepetToplam">0</span> ₺ →</span>
+  <!-- Geri sayım hapı (aktif sipariş süresi) -->
+  <div id="sayacPill" class="sayac-pill" hidden>⏱ <span id="sayacMetin">1:30</span></div>
+
+  <!-- Sepet butonu (logo) -->
+  <button id="sepetBtn" class="sepet-fab" hidden>
+    <span class="fab-ikon">🛒</span>
+    <span class="fab-badge" id="sepetAdet">0</span>
   </button>
 
-  <!-- Sepet paneli -->
+  <!-- Sepet / sipariş paneli -->
   <div id="sepetPanel" class="panel" hidden>
     <div class="panel-ic">
       <div class="panel-tutamac"></div>
       <div class="panel-baslik">
-        <h2>Sepetim</h2>
+        <h2 id="panelBaslik">Sepetim</h2>
         <button id="kapatBtn" class="kapat">✕</button>
       </div>
+      <div id="panelSayac" class="panel-sayac" hidden></div>
       <div id="sepetListe" class="sepet-liste"></div>
       <label class="not-alani">
         <span>📝 Sipariş notu (opsiyonel)</span>
@@ -62,21 +57,12 @@
       </label>
       <div class="panel-toplam">Toplam <strong><span id="panelToplam">0</span> ₺</strong></div>
       <button id="siparisVerBtn" class="siparis-btn">Siparişi Gönder</button>
+      <button id="siparisIptalBtn" class="siparis-btn tehlike" hidden>Siparişi İptal Et</button>
     </div>
   </div>
 
-  <!-- Onay ekranı -->
-  <div id="onay" class="onay" hidden>
-    <div class="onay-ic">
-      <div class="onay-tik">✓</div>
-      <h2>Siparişiniz alındı!</h2>
-      <p>Masa <strong id="onayMasa"></strong> için siparişiniz mutfağa iletildi.</p>
-      <p class="onay-ipucu">Hazırlanmaya başlanmadan önce değiştirebilir veya iptal edebilirsiniz.</p>
-      <button id="onayDuzenle" class="siparis-btn ikincil">Siparişimi Düzenle</button>
-      <button id="onayIptal" class="siparis-btn tehlike">Siparişi İptal Et</button>
-      <button id="onayKapat" class="siparis-btn">Menüye Dön</button>
-    </div>
-  </div>
+  <!-- Toast bildirimi -->
+  <div id="toast" class="toast" hidden></div>
 
   <script src="app.js"></script>
 </body>
