@@ -118,10 +118,15 @@ app.post("/api/order", (req, res) => {
     return res.status(400).json({ error: "Masa ve en az bir ürün gerekli" });
   }
   const items = kalemleriDuzenle(urunler);
+  const masaAd = String(masa).slice(0, 20);
+  // Bu masanın bugünkü kaçıncı siparişi?
+  const bugunBasi = new Date(); bugunBasi.setHours(0, 0, 0, 0);
+  const masaBugunAdet = orders.filter((x) => x.masa === masaAd && new Date(x.tarih) >= bugunBasi).length;
   const order = {
     id: nextId++,
     token: crypto.randomUUID(), // sadece sipariş sahibinin düzenleyebilmesi için
-    masa: String(masa).slice(0, 20),
+    masa: masaAd,
+    siraNo: masaBugunAdet + 1, // masa bazlı günlük sıra
     urunler: items,
     not: String(not || "").slice(0, 300),
     toplam: items.reduce((s, i) => s + i.fiyat * i.adet, 0),

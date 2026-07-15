@@ -65,7 +65,7 @@ function fisYazdir(o) {
     <div class="fs-baslik">SUAT USTA TANTUNI</div>
     <div class="fs-orta">SIPARIS FISI</div>
     <div class="fs-cizgi"></div>
-    <div class="fs-satir"><b>MASA ${esc(o.masa)}</b><span>#${o.id}</span></div>
+    <div class="fs-satir"><b>MASA ${esc(o.masa)}</b><span>${o.siraNo || 1}. Sipariş</span></div>
     <div class="fs-orta2">${saat}</div>
     <div class="fs-cizgi"></div>
     ${satirlar}
@@ -116,7 +116,7 @@ function kartEkle(o, yeniMi) {
   const notHtml = o.not ? `<div class="not">📝 ${esc(o.not)}</div>` : "";
   kart.innerHTML = `
     <div class="kart-ust">
-      <span class="masa">Masa ${esc(o.masa)}</span>
+      <span class="masa">Masa ${esc(o.masa)} <span class="sira-rozet">${o.siraNo || 1}. Sipariş</span></span>
       <span class="saat">${saat}</span>
     </div>
     <ul class="urunler">${urunler}</ul>

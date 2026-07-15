@@ -32,6 +32,7 @@ async function yukle() {
     kart.innerHTML = `
       <div class="gk-ust">
         <span class="gk-masa">Masa ${esc(o.masa)}</span>
+        <span class="gk-sira">${o.siraNo || 1}. Sipariş</span>
         <span class="gk-saat">${saat}</span>
         ${durum}
       </div>
