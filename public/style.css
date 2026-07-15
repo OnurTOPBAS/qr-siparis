@@ -209,7 +209,7 @@ body {
   animation: sepetGiris .3s ease;
 }
 .sepet-fab:active { transform: scale(.94); }
-.fab-ikon { font-size: 1.7rem; line-height: 1; }
+.fab-svg { width: 28px; height: 28px; }
 .fab-badge {
   position: absolute; top: -4px; right: -4px;
   min-width: 24px; height: 24px; padding: 0 5px; border-radius: 12px;
@@ -259,14 +259,14 @@ body {
 .panel-baslik h2 { color: var(--komur); font-weight: 800; }
 .kapat { border: none; background: #efe3d3; width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; cursor: pointer; color: var(--metin); }
 
-.sepet-satir {
-  display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center;
-  padding: 12px 0; border-bottom: 1px solid #ece0d0;
-}
-.s-sol { display: flex; flex-direction: column; gap: 2px; }
-.s-ad { font-weight: 700; color: var(--komur); font-size: .95rem; }
-.s-cikar { font-size: .75rem; color: var(--kirmizi); }
-.s-fiyat { font-weight: 800; color: var(--kirmizi); min-width: 62px; text-align: right; }
+.sepet-satir { padding: 12px 0; border-bottom: 1px solid #ece0d0; }
+.ss-ust { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.s-ad { font-weight: 700; color: var(--komur); font-size: .98rem; }
+.ss-sil { border: none; background: #f2e7d8; color: #9a5b4e; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: .8rem; flex-shrink: 0; }
+.ss-ops { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+.ss-baslik { font-size: .72rem; color: var(--soluk); font-weight: 600; width: 100%; }
+.ss-alt { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.s-fiyat { font-weight: 800; color: var(--kirmizi); }
 
 .adet-kontrol { display: flex; align-items: center; gap: 10px; }
 .adet-kontrol button {

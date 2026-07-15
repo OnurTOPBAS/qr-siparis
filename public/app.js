@@ -217,31 +217,64 @@ function cizSepet() {
   for (const [k, e] of sepet.entries()) {
     const row = document.createElement("div");
     row.className = "sepet-satir";
-    const ekstra = e.eklenen.length ? `<span class="s-ekle">+ ${esc(e.eklenen.map((x) => x.ad).join(", "))}</span>` : "";
-    const cikar = e.cikarilan.length ? `<span class="s-cikar">Çıkar: ${esc(e.cikarilan.join(", "))}</span>` : "";
+
+    const cikChips = (e.urun.cikarilabilir || []).map((m) => {
+      const aktif = e.cikarilan.includes(m);
+      return `<button type="button" class="cikar-chip${aktif ? " aktif" : ""}" data-tip="cikar" data-deger="${esc(m)}">${esc(m)}</button>`;
+    }).join("");
+    const ekChips = (e.urun.eklenebilir || []).map((x) => {
+      const aktif = e.eklenen.some((y) => y.ad === x.ad);
+      return `<button type="button" class="ekle-chip${aktif ? " aktif" : ""}" data-tip="ekle" data-deger="${esc(x.ad)}" data-fiyat="${x.fiyat}">+ ${esc(x.ad)}${x.fiyat ? " (" + x.fiyat + "₺)" : ""}</button>`;
+    }).join("");
+
     row.innerHTML = `
-      <div class="s-sol">
+      <div class="ss-ust">
         <span class="s-ad">${esc(e.urun.ad)}${e.porsiyon ? " • " + esc(e.porsiyon) : ""}</span>
-        ${cikar}${ekstra}
+        <button class="ss-sil" title="Sepetten çıkar">✕</button>
       </div>
-      <div class="adet-kontrol">
-        <button class="eksi">−</button>
-        <span class="adet">${e.adet}</span>
-        <button class="arti">+</button>
-      </div>
-      <span class="s-fiyat">${e.birimFiyat * e.adet} ₺</span>`;
+      ${cikChips ? `<div class="ss-ops"><span class="ss-baslik">İstemediklerin</span>${cikChips}</div>` : ""}
+      ${ekChips ? `<div class="ss-ops"><span class="ss-baslik">Ekstra ekle</span>${ekChips}</div>` : ""}
+      <div class="ss-alt">
+        <div class="adet-kontrol">
+          <button class="eksi">−</button>
+          <span class="adet">${e.adet}</span>
+          <button class="arti">+</button>
+        </div>
+        <span class="s-fiyat">${e.birimFiyat * e.adet} ₺</span>
+      </div>`;
+
     row.querySelector(".arti").onclick = () => { e.adet += 1; guncelleSepetCubugu(); cizSepet(); otoKaydetTetikle(); };
-    row.querySelector(".eksi").onclick = () => {
-      e.adet -= 1;
-      if (e.adet <= 0) sepet.delete(k);
-      guncelleSepetCubugu();
-      cizSepet();
-      otoKaydetTetikle();
-    };
+    row.querySelector(".eksi").onclick = () => { e.adet -= 1; if (e.adet <= 0) sepet.delete(k); guncelleSepetCubugu(); cizSepet(); otoKaydetTetikle(); };
+    row.querySelector(".ss-sil").onclick = () => { sepet.delete(k); guncelleSepetCubugu(); cizSepet(); otoKaydetTetikle(); };
+    row.querySelectorAll("[data-tip]").forEach((chip) => {
+      chip.onclick = () => opsiyonDegistir(k, e, chip.dataset.tip, chip.dataset.deger, Number(chip.dataset.fiyat) || 0);
+    });
     liste.appendChild(row);
   }
   $("panelToplam").textContent = toplamlar().tutar;
   if (sepet.size === 0) $("sepetPanel").hidden = true;
+}
+
+// Sepet içinden malzeme çıkar/ekle
+function opsiyonDegistir(oldKey, e, tip, deger, fiyat) {
+  const eklenenToplam = () => e.eklenen.reduce((s, x) => s + x.fiyat, 0);
+  const porsiyonFiyat = e.birimFiyat - eklenenToplam(); // taban (porsiyon) fiyatı
+  if (tip === "cikar") {
+    const i = e.cikarilan.indexOf(deger);
+    if (i >= 0) e.cikarilan.splice(i, 1); else e.cikarilan.push(deger);
+  } else {
+    const i = e.eklenen.findIndex((x) => x.ad === deger);
+    if (i >= 0) e.eklenen.splice(i, 1); else e.eklenen.push({ ad: deger, fiyat });
+  }
+  e.birimFiyat = porsiyonFiyat + eklenenToplam();
+  // Bu kaleme ait tüm eski anahtarları temizle (referansla), sonra yeni anahtara yerleştir
+  for (const [key, val] of [...sepet.entries()]) { if (val === e) sepet.delete(key); }
+  const yeniKey = anahtar(e.urun.id, e.porsiyon, e.cikarilan, e.eklenen);
+  const mevcut = sepet.get(yeniKey);
+  if (mevcut) mevcut.adet += e.adet; else sepet.set(yeniKey, e);
+  guncelleSepetCubugu();
+  cizSepet();
+  otoKaydetTetikle();
 }
 
 // --- Sepet -> sunucu formatı ---
