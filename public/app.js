@@ -11,6 +11,8 @@ const sepet = new Map();
 let aktifSiparis = null; // { id, token, deadline }
 let sayacTimer = null;
 let kaydetTimer = null;
+let iptalBekliyor = false; // iptal talebi kasadan onay bekliyor
+let iptalPollTimer = null;
 const DUZENLEME_SURESI = 90 * 1000; // 1.5 dakika
 
 const $ = (id) => document.getElementById(id);
@@ -327,19 +329,59 @@ $("siparisVerBtn").onclick = async () => {
   }
 };
 
-// --- İptal ---
+// --- İptal talebi (kasadan onay gerekir) ---
 $("siparisIptalBtn").onclick = async () => {
-  if (!aktifSiparis) return;
-  if (!confirm("Siparişini iptal etmek istiyor musun?")) return;
+  if (!aktifSiparis || iptalBekliyor) return;
+  if (!confirm("İptal talebi göndermek istiyor musun? Onay kasadan gelir.")) return;
   try {
-    await fetch("/api/order/" + aktifSiparis.id, {
-      method: "DELETE", headers: { "Content-Type": "application/json" },
+    const r = await fetch("/api/order/" + aktifSiparis.id + "/iptal-talep", {
+      method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token: aktifSiparis.token }),
     });
-  } catch {}
-  kilitle();
-  gosterToast("Siparişin iptal edildi.");
+    if (!r.ok) throw new Error();
+    iptalBekliyor = true;
+    iptalUIGuncelle();
+    iptalPollBaslat();
+    gosterToast("İptal talebin kasaya iletildi, onay bekleniyor.");
+  } catch { alert("Talep gönderilemedi, tekrar dene."); }
 };
+
+function iptalUIGuncelle() {
+  const b = $("siparisIptalBtn");
+  if (iptalBekliyor) {
+    b.textContent = "⏳ İptal onayı bekleniyor...";
+    b.disabled = true;
+    $("panelSayac").innerHTML = "⏳ <b>İptal talebin kasaya iletildi</b>, onay bekleniyor.";
+  } else {
+    b.textContent = "Siparişi İptal Et";
+    b.disabled = false;
+  }
+}
+
+// Talep sonucunu izle (onay = 404, ret = iptalTalebi false)
+function iptalPollBaslat() {
+  clearInterval(iptalPollTimer);
+  iptalPollTimer = setInterval(async () => {
+    if (!aktifSiparis) { clearInterval(iptalPollTimer); return; }
+    try {
+      const r = await fetch("/api/order/" + aktifSiparis.id);
+      if (r.status === 404) {
+        clearInterval(iptalPollTimer);
+        gosterToast("İptal talebin onaylandı — siparişin iptal edildi.");
+        kilitle();
+        return;
+      }
+      const o = await r.json();
+      if (!o.iptalTalebi) {
+        clearInterval(iptalPollTimer);
+        iptalBekliyor = false;
+        iptalUIGuncelle();
+        sayacGuncelle();
+        gosterToast("İptal talebin reddedildi — siparişin devam ediyor.");
+      }
+    } catch {}
+  }, 4000);
+}
 
 // --- Kaydetme (aktif siparişte otomatik + manuel) ---
 function otoKaydetTetikle() {
@@ -386,10 +428,14 @@ async function sureDoldu() {
 function kilitle() {
   clearInterval(sayacTimer); sayacTimer = null;
   clearTimeout(kaydetTimer);
+  clearInterval(iptalPollTimer);
+  iptalBekliyor = false;
   aktifSiparis = null;
   aktifSil();
   sepet.clear();
   $("not").value = "";
+  $("siparisIptalBtn").disabled = false;
+  $("siparisIptalBtn").textContent = "Siparişi İptal Et";
   panelModunuAyarla();
   guncelleSepetCubugu();
   $("sepetPanel").hidden = true;
@@ -418,6 +464,7 @@ async function aktifDurumuGeriYukle() {
     panelModunuAyarla();
     guncelleSepetCubugu();
     sayacBaslat();
+    if (o.iptalTalebi) { iptalBekliyor = true; iptalUIGuncelle(); iptalPollBaslat(); }
   } catch { aktifSil(); }
 }
 

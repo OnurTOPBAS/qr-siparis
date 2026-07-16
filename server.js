@@ -143,7 +143,7 @@ app.post("/api/order", (req, res) => {
 app.get("/api/order/:id", (req, res) => {
   const o = orders.find((x) => x.id === Number(req.params.id));
   if (!o) return res.status(404).json({ error: "Sipariş bulunamadı" });
-  res.json({ id: o.id, masa: o.masa, urunler: o.urunler, not: o.not, toplam: o.toplam, durum: o.durum });
+  res.json({ id: o.id, masa: o.masa, urunler: o.urunler, not: o.not, toplam: o.toplam, durum: o.durum, iptalTalebi: !!o.iptalTalebi });
 });
 
 // Müşteri siparişini düzenler — sadece "yeni" durumdayken ve doğru token ile
@@ -162,17 +162,20 @@ app.put("/api/order/:id", (req, res) => {
   res.json({ ok: true });
 });
 
-// Müşteri siparişini iptal eder — sadece "yeni" durumdayken ve doğru token ile
-app.delete("/api/order/:id", (req, res) => {
+// Müşteri iptal TALEBİ oluşturur — admin onayı gerekir (doğrudan silme yok)
+app.post("/api/order/:id/iptal-talep", (req, res) => {
   const o = orders.find((x) => x.id === Number(req.params.id));
   if (!o) return res.status(404).json({ error: "Sipariş bulunamadı" });
   if ((req.body?.token || "") !== o.token) return res.status(403).json({ error: "Yetki yok" });
-  if (o.durum !== "yeni") return res.status(409).json({ error: "Sipariş hazırlanıyor, iptal edilemez" });
-  orders = orders.filter((x) => x.id !== o.id);
+  if (o.durum !== "yeni") return res.status(409).json({ error: "Sipariş hazırlanıyor" });
+  o.iptalTalebi = true;
   kaydetOrders();
-  io.emit("orderRemoved", { id: o.id });
+  io.emit("orderChanged", gizle(o)); // kasaya iptal talebini bildir
   res.json({ ok: true });
 });
+
+// Doğrudan silme müşteriye kapalı
+app.delete("/api/order/:id", (_req, res) => res.status(403).json({ error: "İptal için kasadan onay gerekir" }));
 
 // ============ ADMIN GİRİŞ ============
 app.get("/admin/login", (req, res) => {
@@ -289,6 +292,24 @@ app.get("/api/admin/qr", girisGerekli, async (req, res) => {
   } catch {
     res.status(500).json({ error: "QR üretilemedi" });
   }
+});
+
+// --- İptal talebi onay / ret (admin) ---
+app.post("/api/admin/order/:id/iptal-onayla", girisGerekli, (req, res) => {
+  const id = Number(req.params.id);
+  if (!orders.some((x) => x.id === id)) return res.status(404).json({ error: "Sipariş yok" });
+  orders = orders.filter((x) => x.id !== id);
+  kaydetOrders();
+  io.emit("orderRemoved", { id });
+  res.json({ ok: true });
+});
+app.post("/api/admin/order/:id/iptal-reddet", girisGerekli, (req, res) => {
+  const o = orders.find((x) => x.id === Number(req.params.id));
+  if (!o) return res.status(404).json({ error: "Sipariş yok" });
+  o.iptalTalebi = false;
+  kaydetOrders();
+  io.emit("orderChanged", gizle(o));
+  res.json({ ok: true });
 });
 
 // --- Satış raporu (bugün / bu hafta / bu ay) ---

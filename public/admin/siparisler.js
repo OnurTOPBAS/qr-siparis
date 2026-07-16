@@ -92,6 +92,7 @@ socket.on("orderChanged", (o) => {
   const k = document.querySelector(`.kart[data-id="${o.id}"]`);
   if (k) k.remove();
   kartEkle(o, true);
+  if (o.iptalTalebi) bipCal(); // iptal talebi geldi → sesli uyar
   guncelleSayac();
 });
 // Sipariş iptal edildi veya hazır işaretlendi → panelden kalk
@@ -104,7 +105,7 @@ socket.on("orderRemoved", ({ id }) => {
 function kartEkle(o, yeniMi) {
   $("bos").hidden = true;
   const kart = document.createElement("div");
-  kart.className = "kart" + (yeniMi ? " yeni" : "");
+  kart.className = "kart" + (yeniMi ? " yeni" : "") + (o.iptalTalebi ? " iptal-bekliyor" : "");
   kart.dataset.id = o.id;
   const saat = new Date(o.tarih).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
   const urunler = o.urunler.map((u) => {
@@ -114,6 +115,12 @@ function kartEkle(o, yeniMi) {
     return `<li><span class="adet">${u.adet}×</span> ${esc(u.ad)}${porsiyon}${cikar}${ekle}</li>`;
   }).join("");
   const notHtml = o.not ? `<div class="not">📝 ${esc(o.not)}</div>` : "";
+  const iptalHtml = o.iptalTalebi ? `
+    <div class="iptal-uyari">⚠️ Müşteri iptal talebi gönderdi</div>
+    <div class="iptal-butonlar">
+      <button class="iptal-onayla">✓ İptali Onayla</button>
+      <button class="iptal-reddet">✗ Reddet</button>
+    </div>` : "";
   kart.innerHTML = `
     <div class="kart-ust">
       <span class="masa">Masa ${esc(o.masa)} <span class="sira-rozet">${o.siraNo || 1}. Sipariş</span></span>
@@ -121,6 +128,7 @@ function kartEkle(o, yeniMi) {
     </div>
     <ul class="urunler">${urunler}</ul>
     ${notHtml}
+    ${iptalHtml}
     <div class="kart-alt">
       <span class="toplam">${o.toplam} ₺</span>
       <button class="yazdir-btn" title="Fiş yazdır">🖨️</button>
@@ -128,6 +136,14 @@ function kartEkle(o, yeniMi) {
     </div>`;
   kart.querySelector(".hazir-btn").onclick = () => socket.emit("markDone", o.id);
   kart.querySelector(".yazdir-btn").onclick = () => fisYazdir(o);
+  if (o.iptalTalebi) {
+    kart.querySelector(".iptal-onayla").onclick = async () => {
+      if (confirm(`Masa ${o.masa} siparişi iptal edilsin mi?`)) await fetch("/api/admin/order/" + o.id + "/iptal-onayla", { method: "POST" });
+    };
+    kart.querySelector(".iptal-reddet").onclick = async () => {
+      await fetch("/api/admin/order/" + o.id + "/iptal-reddet", { method: "POST" });
+    };
+  }
   siparislerEl.insertBefore(kart, siparislerEl.firstChild.nextSibling);
   if (yeniMi) setTimeout(() => kart.classList.remove("yeni"), 3000);
 }

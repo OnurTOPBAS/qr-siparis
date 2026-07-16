@@ -56,6 +56,17 @@ body {
 .k-cikar { color: #e67e22; font-size: .8rem; margin-left: 22px; }
 .k-ekle { color: #2ecc71; font-size: .8rem; margin-left: 22px; }
 
+/* İptal talebi (müşteriden gelen, admin onayı bekleyen) */
+.kart.iptal-bekliyor { border-left-color: var(--kirmizi); box-shadow: 0 0 0 2px rgba(231,76,60,.4), 0 4px 14px rgba(0,0,0,.35); }
+.iptal-uyari {
+  background: #3a1714; border: 1px solid #7a2b22; color: #ff9b8f;
+  padding: 8px 10px; border-radius: 8px; font-size: .85rem; font-weight: 700; margin: 10px 0 8px;
+}
+.iptal-butonlar { display: flex; gap: 8px; }
+.iptal-butonlar button { flex: 1; border: none; border-radius: 9px; padding: 9px; font-weight: 700; cursor: pointer; font-size: .85rem; font-family: inherit; }
+.iptal-onayla { background: var(--kirmizi); color: #fff; }
+.iptal-reddet { background: transparent; color: #bbb; border: 1px solid #444 !important; }
+
 /* Geçmiş siparişler */
 .gecmis-kart { background: #1c1f26; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; max-width: 640px; }
 .gk-ust { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
