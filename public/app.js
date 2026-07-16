@@ -71,7 +71,7 @@ fetch("/api/menu")
       sec.id = secId;
       const h = document.createElement("h2");
       h.className = "kategori";
-      h.innerHTML = `<span class="kat-emoji">${KAT_EMOJI[katAd] || "🍽️"}</span> ${esc(katAd)}`;
+      h.textContent = katAd;
       sec.appendChild(h);
       grup.get(katAd).forEach((u, j) => {
         const kart = urunKarti(u);
