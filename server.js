@@ -199,6 +199,7 @@ app.get("/admin/menu", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "me
 app.get("/admin/masalar", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "masalar.html")));
 app.get("/admin/rapor", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "rapor.html")));
 app.get("/admin/gecmis", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "gecmis.html")));
+app.get("/admin/kampanya", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "kampanya.html")));
 
 // --- Menü yönetimi ---
 app.get("/api/admin/menu", girisGerekli, (_req, res) => res.json(oku(MENU_PATH, { urunler: [] })));
@@ -240,12 +241,14 @@ app.post("/api/admin/menu/urun", girisGerekli, (req, res) => {
     if (porsiyonlar.length) u.porsiyonlar = porsiyonlar;
     if (cikarilabilir.length) u.cikarilabilir = cikarilabilir;
     if (eklenebilir.length) u.eklenebilir = eklenebilir;
+    if (g.kampanya) { u.kampanya = true; if (Number(g.eskiFiyat)) u.eskiFiyat = Number(g.eskiFiyat); }
   } else {
     const yeniId = menu.urunler.reduce((m, x) => Math.max(m, x.id), 0) + 1;
     const yeni = { id: yeniId, ...temel, resim: g.resim || "" };
     if (porsiyonlar.length) yeni.porsiyonlar = porsiyonlar;
     if (cikarilabilir.length) yeni.cikarilabilir = cikarilabilir;
     if (eklenebilir.length) yeni.eklenebilir = eklenebilir;
+    if (g.kampanya) { yeni.kampanya = true; if (Number(g.eskiFiyat)) yeni.eskiFiyat = Number(g.eskiFiyat); }
     menu.urunler.push(yeni);
   }
   yaz(MENU_PATH, menu);

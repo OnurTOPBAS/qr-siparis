@@ -6,7 +6,7 @@ $("cikis").onclick = async () => { await fetch("/admin/logout", { method: "POST"
 async function yukle() {
   const r = await fetch("/api/admin/menu");
   const d = await r.json();
-  urunler = d.urunler || [];
+  urunler = (d.urunler || []).filter((u) => !u.kampanya); // kampanyalar ayrı sayfada yönetilir
   ciz();
 }
 

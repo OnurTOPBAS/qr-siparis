@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kampanyalı Menüler</title>
+  <link rel="stylesheet" href="/admin/panel.css" />
+</head>
+<body>
+  <nav class="nav">
+    <span class="marka">🍽️ Yönetim</span>
+    <a href="/admin">🔔 Siparişler</a>
+    <a href="/admin/gecmis">🕘 Geçmiş</a>
+    <a href="/admin/kampanya" class="aktif">🔥 Kampanyalar</a>
+    <a href="/admin/menu">📋 Menü</a>
+    <a href="/admin/masalar">🪑 Masalar & QR</a>
+    <a href="/admin/rapor">📊 Raporlar</a>
+    <div class="sag">
+      <button class="cikis" id="cikis">Çıkış</button>
+    </div>
+  </nav>
+
+  <main class="icerik">
+    <div class="baslik-satir">
+      <h2 class="sayfa-baslik">Kampanyalı Menüler</h2>
+      <button class="buton-birincil" id="yeniKampanya">+ Yeni Kampanya</button>
+    </div>
+    <p class="kampanya-ipucu">Buradan oluşturduğun kampanyalar müşteri menüsünün <b>en üstünde</b> "Kampanyalı Menülerimiz" bölümünde görünür. Kampanya yoksa o bölüm hiç görünmez.</p>
+    <div id="liste"></div>
+    <div id="bos" class="bos" hidden>Henüz kampanya yok. "Yeni Kampanya" ile ekleyebilirsin.</div>
+  </main>
+
+  <!-- Ekle/Düzenle Modalı -->
+  <div class="modal" id="modal" hidden>
+    <form class="modal-ic" id="form">
+      <h3 id="modalBaslik">Yeni Kampanya</h3>
+      <input type="hidden" id="urunId" />
+      <div class="form-grup">
+        <label>Kampanya Adı *</label>
+        <input type="text" id="ad" required maxlength="100" placeholder="Örn: Tantuni Menü" />
+      </div>
+      <div class="form-grup">
+        <label>Açıklama <small>(içeriği yaz: ne dahil?)</small></label>
+        <textarea id="aciklama" rows="2" maxlength="200" placeholder="Örn: Et Dürüm Tantuni + Ayran + Patates"></textarea>
+      </div>
+      <div class="form-grup">
+        <label>Kampanya Fiyatı (₺) *</label>
+        <input type="number" id="fiyat" required min="0" step="1" value="0" />
+      </div>
+      <div class="form-grup">
+        <label>Eski Fiyat (₺) <small>(opsiyonel — üstü çizili gösterilir)</small></label>
+        <input type="number" id="eskiFiyat" min="0" step="1" placeholder="Örn: 520" />
+      </div>
+      <div class="form-grup">
+        <label>Kalori <small>(opsiyonel)</small></label>
+        <input type="text" id="kalori" maxlength="30" placeholder="Örn: 700-900" />
+      </div>
+      <div class="form-grup">
+        <label>Görsel</label>
+        <input type="file" id="gorsel" accept="image/*" />
+        <img class="onizleme" id="onizleme" hidden />
+        <input type="hidden" id="resim" />
+      </div>
+      <div class="login-hata" id="hata"></div>
+      <div class="modal-butonlar">
+        <button type="button" class="buton-ikincil" id="iptal">İptal</button>
+        <button type="submit" class="buton-birincil" id="kaydet">Kaydet</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/admin/kampanya.js"></script>
+</body>
+</html>

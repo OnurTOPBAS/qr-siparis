@@ -22,6 +22,8 @@ const aktifYaz = (v) => localStorage.setItem(LS_KEY, JSON.stringify(v));
 const aktifSil = () => localStorage.removeItem(LS_KEY);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+const KAMPANYA_BASLIK = "Kampanyalı Menülerimiz";
+
 const anahtar = (id, porsiyon, cikarilan, eklenen) =>
   `${id}|${porsiyon || ""}|${[...cikarilan].sort().join(",")}|${eklenen.map((e) => e.ad).sort().join(",")}`;
 
@@ -49,9 +51,14 @@ fetch("/api/menu")
     c.innerHTML = "";
     nav.innerHTML = "";
 
+    // Kampanyalar en üstte ayrı bölüm; yoksa hiç görünmez
+    const kampanyalar = menu.filter((u) => u.kampanya);
+    const normaller = menu.filter((u) => !u.kampanya);
+
     const kategoriler = [];
     const grup = new Map();
-    menu.forEach((u) => {
+    if (kampanyalar.length) { grup.set(KAMPANYA_BASLIK, kampanyalar); kategoriler.push(KAMPANYA_BASLIK); }
+    normaller.forEach((u) => {
       const k = u.kategori || "Diğer";
       if (!grup.has(k)) { grup.set(k, []); kategoriler.push(k); }
       grup.get(k).push(u);
@@ -66,11 +73,12 @@ fetch("/api/menu")
       chip.onclick = () => document.getElementById(secId).scrollIntoView({ behavior: "smooth", block: "start" });
       nav.appendChild(chip);
 
+      const kampanyaBolumu = katAd === KAMPANYA_BASLIK;
       const sec = document.createElement("section");
-      sec.className = "kat-bolum";
+      sec.className = "kat-bolum" + (kampanyaBolumu ? " kampanya-bolum" : "");
       sec.id = secId;
       const h = document.createElement("h2");
-      h.className = "kategori";
+      h.className = "kategori" + (kampanyaBolumu ? " kategori-kampanya" : "");
       h.textContent = katAd;
       sec.appendChild(h);
       grup.get(katAd).forEach((u, j) => {
@@ -95,7 +103,7 @@ function urunTuru(u) {
 function urunKarti(u) {
   const div = document.createElement("div");
   const tur = urunTuru(u);
-  div.className = "urun" + (tur ? " urun--" + tur : "");
+  div.className = "urun" + (u.kampanya ? " urun--kampanya" : tur ? " urun--" + tur : "");
   div.dataset.id = u.id;
 
   const porsiyonlu = Array.isArray(u.porsiyonlar) && u.porsiyonlar.length > 0;
@@ -132,7 +140,7 @@ function urunKarti(u) {
       ${cikarHtml}
       ${ekleHtml}
       <div class="urun-alt">
-        <span class="fiyat">${basFiyat} ₺</span>
+        <span class="fiyat">${u.eskiFiyat ? `<s class="eski-fiyat">${u.eskiFiyat} ₺</s> ` : ""}${basFiyat} ₺</span>
         <button class="ekle-btn">＋ Sepete Ekle</button>
       </div>
     </div>`;
@@ -172,7 +180,7 @@ function guncelleFiyatGosterim(kart, u) {
   const sec = kart.querySelector(".porsiyon-sec");
   let fiyat = sec ? Number(sec.options[sec.selectedIndex].dataset.fiyat) : u.fiyat;
   kart.querySelectorAll(".ekle-chip.aktif").forEach((c) => (fiyat += Number(c.dataset.fiyat) || 0));
-  kart.querySelector(".fiyat").textContent = fiyat + " ₺";
+  kart.querySelector(".fiyat").innerHTML = (u.eskiFiyat ? `<s class="eski-fiyat">${u.eskiFiyat} ₺</s> ` : "") + fiyat + " ₺";
 }
 
 function sepeteEkle(u, kart) {
