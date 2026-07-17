@@ -128,13 +128,10 @@ function urunKarti(u) {
         ${u.cikarilabilir.map((m) => `<button type="button" class="cikar-chip" data-mal="${esc(m)}">${esc(m)}</button>`).join("")}</div>`
     : "";
 
-  // "Normal / Sadece Et" seçimi — porsiyon menüsüyle aynı yerde
+  // Ayrı kutucuk: "Sadece Et İstiyorum" / "Sadece Tavuk İstiyorum"
   const sadeceAd = sadeceEtiketi(u);
   const sadeceHtml = sadeceAd
-    ? `<select class="icerik-sec">
-        <option value="">Normal</option>
-        <option value="${esc(sadeceAd)}">${esc(sadeceAd)}</option>
-      </select>`
+    ? `<button type="button" class="sadece-kutu" data-sadece="${esc(sadeceAd)}">${esc(sadeceAd)} İstiyorum</button>`
     : "";
 
   const ekleHtml = Array.isArray(u.eklenebilir) && u.eklenebilir.length
@@ -151,9 +148,9 @@ function urunKarti(u) {
       </div>
       ${u.aciklama ? `<p class="urun-aciklama">${esc(u.aciklama)}</p>` : ""}
       ${porsiyonHtml}
-      ${sadeceHtml}
       ${cikarHtml}
       ${ekleHtml}
+      ${sadeceHtml}
       <div class="urun-alt">
         <span class="fiyat">${u.eskiFiyat ? `<s class="eski-fiyat">${u.eskiFiyat} ₺</s> ` : ""}${basFiyat} ₺</span>
         <button class="ekle-btn">＋ Sepete Ekle</button>
@@ -170,6 +167,8 @@ function urunKarti(u) {
     };
   }
   div.querySelectorAll(".cikar-chip").forEach((chip) => (chip.onclick = () => chip.classList.toggle("aktif")));
+  const sk = div.querySelector(".sadece-kutu");
+  if (sk) sk.onclick = () => sk.classList.toggle("aktif");
   div.querySelectorAll(".ekle-chip").forEach((chip) => (chip.onclick = () => { chip.classList.toggle("aktif"); guncelleFiyatGosterim(div, u); }));
   div.querySelector(".ekle-btn").onclick = () => sepeteEkle(u, div);
   return div;
@@ -204,8 +203,8 @@ function sepeteEkle(u, kart) {
   const porsiyonFiyat = sec ? Number(sec.options[sec.selectedIndex].dataset.fiyat) : u.fiyat;
   const cikarilan = [...kart.querySelectorAll(".cikar-chip.aktif")].map((c) => c.dataset.mal);
   const eklenen = [...kart.querySelectorAll(".ekle-chip.aktif")].map((c) => ({ ad: c.dataset.ad, fiyat: Number(c.dataset.fiyat) || 0 }));
-  const icerikSec = kart.querySelector(".icerik-sec");
-  const sadece = icerikSec && icerikSec.value ? icerikSec.value : null;
+  const sadeceBtn = kart.querySelector(".sadece-kutu");
+  const sadece = sadeceBtn && sadeceBtn.classList.contains("aktif") ? sadeceBtn.dataset.sadece : null;
   const birimFiyat = porsiyonFiyat + eklenen.reduce((s, e) => s + e.fiyat, 0);
 
   const k = anahtar(u.id, porsiyon, cikarilan, eklenen, sadece);
@@ -251,10 +250,7 @@ function cizSepet() {
     }).join("");
     const sadeceAd = sadeceEtiketi(e.urun);
     const sadeceSelect = sadeceAd
-      ? `<select class="icerik-sec ss-icerik">
-          <option value=""${!e.sadece ? " selected" : ""}>Normal</option>
-          <option value="${esc(sadeceAd)}"${e.sadece ? " selected" : ""}>${esc(sadeceAd)}</option>
-        </select>`
+      ? `<button type="button" class="sadece-kutu ss-sadece${e.sadece ? " aktif" : ""}" data-sadece="${esc(sadeceAd)}">${esc(sadeceAd)} İstiyorum</button>`
       : "";
     const ekChips = (e.urun.eklenebilir || []).map((x) => {
       const aktif = e.eklenen.some((y) => y.ad === x.ad);
@@ -266,8 +262,8 @@ function cizSepet() {
         <span class="s-ad">${esc(e.urun.ad)}${e.porsiyon ? " • " + esc(e.porsiyon) : ""}</span>
         <button class="ss-sil" title="Sepetten çıkar">✕</button>
       </div>
-      ${sadeceSelect}
       ${cikChips ? `<div class="ss-ops"><span class="ss-baslik">İstemediklerin</span>${cikChips}</div>` : ""}
+      ${sadeceSelect}
       ${ekChips ? `<div class="ss-ops"><span class="ss-baslik">Ekstra ekle</span>${ekChips}</div>` : ""}
       <div class="ss-alt">
         <div class="adet-kontrol">
@@ -284,8 +280,8 @@ function cizSepet() {
     row.querySelectorAll("[data-tip]").forEach((chip) => {
       chip.onclick = () => opsiyonDegistir(k, e, chip.dataset.tip, chip.dataset.deger, Number(chip.dataset.fiyat) || 0);
     });
-    const ic = row.querySelector(".ss-icerik");
-    if (ic) ic.onchange = () => { e.sadece = ic.value || null; yenidenAnahtarla(e); guncelleSepetCubugu(); cizSepet(); otoKaydetTetikle(); };
+    const ic = row.querySelector(".ss-sadece");
+    if (ic) ic.onclick = () => { e.sadece = e.sadece ? null : ic.dataset.sadece; yenidenAnahtarla(e); guncelleSepetCubugu(); cizSepet(); otoKaydetTetikle(); };
     liste.appendChild(row);
   }
   $("panelToplam").textContent = toplamlar().tutar;

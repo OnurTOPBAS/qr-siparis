@@ -199,8 +199,8 @@ body {
 }
 .urun-aciklama { font-size: .82rem; color: var(--soluk); margin: 4px 0; line-height: 1.4; }
 
-/* Porsiyon + içerik (Normal / Sadece Et) seçicileri */
-.porsiyon-sec, .icerik-sec {
+/* Porsiyon seçici */
+.porsiyon-sec {
   width: 100%; margin: 8px 0 4px; padding: 10px 12px;
   border: 1.5px solid #ecdcc7; border-radius: 12px;
   background: #fffaf2 url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23c0392b' stroke-width='2'/></svg>") no-repeat right 14px center;
@@ -218,6 +218,22 @@ body {
 }
 .cikar-chip.aktif { background: #fdecea; border-color: var(--kirmizi); color: var(--kirmizi); text-decoration: line-through; }
 .ekle-chip.aktif { background: #e7f7ee; border-color: var(--yesil); color: #1e7d45; font-weight: 600; }
+
+/* "Sadece Et İstiyorum" kutucuğu (porsiyon ve İstemediklerin'den ayrı) */
+.sadece-kutu {
+  display: flex; align-items: center; gap: 9px; width: 100%;
+  margin-top: 10px; padding: 11px 13px;
+  border: 1.5px dashed #e3ceb0; border-radius: 12px;
+  background: #fffaf2; color: var(--metin);
+  font-family: inherit; font-size: .9rem; font-weight: 600; text-align: left; cursor: pointer;
+  transition: .15s;
+}
+.sadece-kutu::before { content: "☐"; font-size: 1.15rem; line-height: 1; }
+.sadece-kutu.aktif {
+  background: #fff1dc; border-color: var(--turuncu); border-style: solid; color: #b45309;
+}
+.sadece-kutu.aktif::before { content: "☑"; color: var(--turuncu); }
+.sadece-kutu:active { transform: scale(.98); }
 .s-ekle { font-size: .75rem; color: #1e7d45; }
 
 /* Alt satır: fiyat + ekle */
@@ -304,7 +320,7 @@ body {
 .ss-ust { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .s-ad { font-weight: 700; color: var(--komur); font-size: .98rem; }
 .ss-sil { border: none; background: #f2e7d8; color: #9a5b4e; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: .8rem; flex-shrink: 0; }
-.ss-icerik { margin: 8px 0 0; }
+.ss-sadece { margin-top: 10px; }
 .ss-ops { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
 .ss-baslik { font-size: .72rem; color: var(--soluk); font-weight: 600; width: 100%; }
 .ss-alt { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
