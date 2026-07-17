@@ -45,7 +45,7 @@
       "ad": "Yoğurtlu Et Tantuni",
       "kategori": "Et Tantuniler",
       "fiyat": 500,
-      "resim": "img/yogurtlu.jpg",
+      "resim": "img/yogurtlu-et.jpg",
       "aciklama": "",
       "kalori": "750-950",
       "porsiyonlar": [
@@ -245,7 +245,7 @@
       "ad": "Hünkar Beğendi Tantuni (Et)",
       "kategori": "Yeni Ürünler",
       "fiyat": 550,
-      "resim": "img/yogurtlu.jpg",
+      "resim": "img/hunkar-et.jpg",
       "aciklama": "",
       "kalori": "750-950",
       "cikarilabilir": [
@@ -300,7 +300,7 @@
       "ad": "Patlıcanlı Yoğurtlu Et Tantuni",
       "kategori": "Yeni Ürünler",
       "fiyat": 600,
-      "resim": "img/yogurtlu.jpg",
+      "resim": "img/yogurtlu-et.jpg",
       "aciklama": "",
       "kalori": "850-1100",
       "porsiyonlar": [
@@ -350,7 +350,7 @@
       "ad": "Hünkar Beğendi Tavuk",
       "kategori": "Yeni Ürünler",
       "fiyat": 550,
-      "resim": "img/yogurtlu.jpg",
+      "resim": "img/hunkar-tavuk.jpg",
       "aciklama": "",
       "kalori": "650-850",
       "cikarilabilir": [
@@ -405,7 +405,7 @@
       "ad": "Kelle Paça",
       "kategori": "Çorbalar",
       "fiyat": 450,
-      "resim": "",
+      "resim": "img/kelle-paca.jpg",
       "aciklama": "",
       "kalori": "350-700",
       "eklenebilir": [
@@ -420,7 +420,7 @@
       "ad": "Beyran Çorbası",
       "kategori": "Çorbalar",
       "fiyat": 500,
-      "resim": "",
+      "resim": "img/beyran.jpg",
       "aciklama": "",
       "kalori": "650-750",
       "eklenebilir": [
@@ -435,7 +435,7 @@
       "ad": "Ayak Paça Çorbası",
       "kategori": "Çorbalar",
       "fiyat": 300,
-      "resim": "",
+      "resim": "img/ayak-paca.jpg",
       "aciklama": "",
       "kalori": "430-750",
       "eklenebilir": [
@@ -450,7 +450,7 @@
       "ad": "Mercimek Çorbası",
       "kategori": "Çorbalar",
       "fiyat": 150,
-      "resim": "",
+      "resim": "img/mercimek.jpg",
       "aciklama": "",
       "kalori": "180-300"
     },
