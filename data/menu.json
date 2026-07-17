@@ -464,15 +464,6 @@
       "kalori": "450-550"
     },
     {
-      "id": 30,
-      "ad": "Lipton Karışık",
-      "kategori": "İçecekler",
-      "fiyat": 80,
-      "resim": "img/icetea.jpg",
-      "aciklama": "",
-      "kalori": "90"
-    },
-    {
       "id": 31,
       "ad": "Kola",
       "kategori": "İçecekler",
@@ -500,22 +491,22 @@
       "kalori": "140"
     },
     {
-      "id": 34,
-      "ad": "Lipton Kayısı",
+      "id": 35,
+      "ad": "Lipton Ice Tea Şeftali",
       "kategori": "İçecekler",
       "fiyat": 80,
       "resim": "img/icetea.jpg",
-      "aciklama": "",
-      "kalori": "90"
+      "aciklama": "250 ml",
+      "kalori": "65"
     },
     {
-      "id": 35,
-      "ad": "Lipton Şeftali",
+      "id": 42,
+      "ad": "Lipton Ice Tea Limon",
       "kategori": "İçecekler",
       "fiyat": 80,
       "resim": "img/icetea.jpg",
-      "aciklama": "",
-      "kalori": "65"
+      "aciklama": "250 ml",
+      "kalori": "45"
     },
     {
       "id": 36,
@@ -542,7 +533,17 @@
       "fiyat": 70,
       "resim": "img/salgam.jpg",
       "aciklama": "",
-      "kalori": "16"
+      "kalori": "16",
+      "porsiyonlar": [
+        {
+          "ad": "Acısız",
+          "fiyat": 70
+        },
+        {
+          "ad": "Acılı",
+          "fiyat": 70
+        }
+      ]
     },
     {
       "id": 39,
