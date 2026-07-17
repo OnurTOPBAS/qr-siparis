@@ -35,11 +35,11 @@ body {
 }
 .hero-bg {
   position: absolute; inset: 0;
-  background: linear-gradient(150deg, #e0641f 0%, #c0392b 50%, #7a1c14 100%);
+  background: #7a1c14 url("img/suat-hero.jpg") center 42% / cover no-repeat;
 }
 .hero-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,.06) 0%, rgba(60,15,10,.18) 70%, rgba(60,15,10,.34) 100%);
+  background: linear-gradient(180deg, rgba(30,16,10,.30) 0%, rgba(30,16,10,.55) 55%, rgba(30,16,10,.90) 100%);
 }
 .hero-ic {
   position: relative; z-index: 2;
@@ -250,6 +250,42 @@ body {
 }
 .ekle-btn:active { transform: scale(.95); }
 .ekle-btn.eklendi { background: linear-gradient(135deg, #34c26f, var(--yesil)); box-shadow: 0 4px 12px rgba(46,158,91,.35); }
+
+/* Google yorum daveti */
+.yorum-kutu {
+  max-width: 640px; margin: 8px auto 0; padding: 26px 20px;
+  background: var(--kart); border-radius: 20px; text-align: center;
+  box-shadow: var(--golge); border: 1.5px solid #f0e2cd;
+}
+.yorum-yildiz { font-size: 1.1rem; letter-spacing: 2px; margin-bottom: 8px; }
+.yorum-kutu h3 { font-size: 1.15rem; color: var(--komur); margin-bottom: 6px; }
+.yorum-kutu p { font-size: .88rem; color: var(--soluk); margin-bottom: 16px; }
+.yorum-btn {
+  display: inline-block; text-decoration: none;
+  background: #fff; color: #3c4043; border: 1.5px solid #dadce0;
+  font-weight: 700; font-size: .95rem; padding: 12px 22px; border-radius: 30px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.yorum-btn:active { transform: scale(.97); }
+
+/* Sokak hayvanlarına bağış popup */
+.bagis-pop {
+  position: fixed; inset: 0; z-index: 70;
+  background: rgba(36,26,21,.6);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.bagis-ic {
+  background: #fff; border-radius: 24px; padding: 30px 24px; text-align: center;
+  max-width: 340px; width: 100%; animation: yukari .28s ease;
+}
+.bagis-pati {
+  width: 74px; height: 74px; margin: 0 auto 16px; border-radius: 50%;
+  background: linear-gradient(135deg, #ffd9a8, #ffb066);
+  font-size: 2.2rem; line-height: 74px;
+}
+.bagis-ic h2 { font-size: 1.2rem; color: var(--komur); margin-bottom: 8px; }
+.bagis-ic p { font-size: .9rem; color: var(--soluk); line-height: 1.5; margin-bottom: 20px; }
+.bagis-ic .siparis-btn + .siparis-btn { margin-top: 10px; }
 
 /* Alt bilgi */
 .alt-bilgi { text-align: center; padding: 20px; color: var(--soluk); }

@@ -27,10 +27,29 @@
 
   <main id="menuAlani" class="menu"></main>
 
+  <!-- Google yorum daveti (link tanımlıysa görünür) -->
+  <section id="yorumKutu" class="yorum-kutu" hidden>
+    <div class="yorum-yildiz">⭐️⭐️⭐️⭐️⭐️</div>
+    <h3>Lezzetimizi beğendin mi?</h3>
+    <p>Google'da bir yorum bırakarak bize destek olabilirsin 🧡</p>
+    <a id="yorumLink" class="yorum-btn" href="#" target="_blank" rel="noopener">Google'da Yorum Yap</a>
+  </section>
+
   <footer class="alt-bilgi">
     <p>Afiyet olsun 🧡</p>
     <span>Suat Usta Tantuni · QR Sipariş</span>
   </footer>
+
+  <!-- Sokak hayvanlarına bağış popup -->
+  <div id="bagisPopup" class="bagis-pop" hidden>
+    <div class="bagis-ic">
+      <div class="bagis-pati">🐾</div>
+      <h2>Sokak hayvanlarına destek</h2>
+      <p>Siparişine <strong>100 ₺</strong> bağış ekleyerek sokak hayvanlarının mama ve bakımına katkı sağlayabilirsin.</p>
+      <button id="bagisEvet" class="siparis-btn">🐾 100 ₺ Bağış Ekle</button>
+      <button id="bagisHayir" class="siparis-btn ikincil">Şimdi değil</button>
+    </div>
+  </div>
 
   <!-- Geri sayım hapı (aktif sipariş süresi) -->
   <div id="sayacPill" class="sayac-pill" hidden>⏱ <span id="sayacMetin">1:30</span></div>

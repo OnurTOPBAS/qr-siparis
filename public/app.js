@@ -23,6 +23,9 @@ const aktifSil = () => localStorage.removeItem(LS_KEY);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const KAMPANYA_BASLIK = "Kampanyalı Menülerimiz";
+// Sokak hayvanlarına bağış (sepete ürün eklenince bir kez sorulur)
+const BAGIS = { id: 9999, ad: "Sokak Hayvanlarına Bağış 🐾", fiyat: 100 };
+let bagisSoruldu = false;
 // Tantunilerde "Sadece Et / Sadece Tavuk" seçeneği (porsiyon menüsünün yanında)
 const sadeceEtiketi = (u) =>
   Array.isArray(u.cikarilabilir) && u.cikarilabilir.length
@@ -218,7 +221,40 @@ function sepeteEkle(u, kart) {
   btn.textContent = "Eklendi ✓";
   btn.classList.add("eklendi");
   setTimeout(() => { btn.textContent = "＋ Sepete Ekle"; btn.classList.remove("eklendi"); }, 1000);
+  bagisSor();
 }
+
+// --- Sokak hayvanlarına bağış popup'ı ---
+function bagisSepetteMi() {
+  return [...sepet.values()].some((e) => e.urun.id === BAGIS.id);
+}
+function bagisSor() {
+  if (bagisSoruldu || bagisSepetteMi()) return;
+  bagisSoruldu = true;
+  setTimeout(() => ($("bagisPopup").hidden = false), 500); // "Eklendi ✓" görünsün sonra çıksın
+}
+$("bagisEvet").onclick = () => {
+  $("bagisPopup").hidden = true;
+  if (bagisSepetteMi()) return;
+  sepet.set(anahtar(BAGIS.id, null, [], [], null), {
+    urun: BAGIS, porsiyon: null, cikarilan: [], eklenen: [], sadece: null, birimFiyat: BAGIS.fiyat, adet: 1,
+  });
+  guncelleSepetCubugu();
+  otoKaydetTetikle();
+  gosterToast("Teşekkürler! 🐾 100 ₺ bağış siparişine eklendi.");
+};
+$("bagisHayir").onclick = () => ($("bagisPopup").hidden = true);
+
+// --- Google yorum daveti (link tanımlıysa göster) ---
+fetch("/api/ayarlar")
+  .then((r) => r.json())
+  .then((a) => {
+    if (a.googleYorumUrl) {
+      $("yorumLink").href = a.googleYorumUrl;
+      $("yorumKutu").hidden = false;
+    }
+  })
+  .catch(() => {});
 
 function toplamlar() {
   let adet = 0, tutar = 0;

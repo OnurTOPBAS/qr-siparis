@@ -41,9 +41,10 @@ const yaz = (p, veri) => {
 // --- Ayarlar (şifre burada; yoksa varsayılanla oluşturulur) ---
 let config = oku(CONFIG_PATH, null);
 if (!config) {
-  config = { adminSifre: "admin123", siteAdi: "Suat Usta Tantuni" };
+  config = { adminSifre: "admin123", siteAdi: "Suat Usta Tantuni", googleYorumUrl: "" };
   yaz(CONFIG_PATH, config);
 }
+if (config.googleYorumUrl === undefined) { config.googleYorumUrl = ""; yaz(CONFIG_PATH, config); }
 
 // --- Siparişler ---
 let orders = oku(ORDERS_PATH, []);
@@ -94,6 +95,9 @@ const upload = multer({
 app.get("/", (_req, res) => res.sendFile(join(__dirname, "public", "index.html")));
 
 app.get("/api/menu", (_req, res) => res.json(oku(MENU_PATH, { urunler: [] })));
+
+// Müşteri tarafı ayarlar (şifre vb. sızdırmadan)
+app.get("/api/ayarlar", (_req, res) => res.json({ siteAdi: config.siteAdi || "", googleYorumUrl: config.googleYorumUrl || "" }));
 
 const kalemleriDuzenle = (urunler) =>
   urunler.map((u) => ({
