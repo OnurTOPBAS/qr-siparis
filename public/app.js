@@ -23,9 +23,14 @@ const aktifSil = () => localStorage.removeItem(LS_KEY);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const KAMPANYA_BASLIK = "Kampanyalı Menülerimiz";
+// Tantunilerde "Sadece Et / Sadece Tavuk" seçeneği (porsiyon menüsünün yanında)
+const sadeceEtiketi = (u) =>
+  Array.isArray(u.cikarilabilir) && u.cikarilabilir.length
+    ? (/tavuk/i.test(u.ad) ? "Sadece Tavuk" : "Sadece Et")
+    : null;
 
-const anahtar = (id, porsiyon, cikarilan, eklenen) =>
-  `${id}|${porsiyon || ""}|${[...cikarilan].sort().join(",")}|${eklenen.map((e) => e.ad).sort().join(",")}`;
+const anahtar = (id, porsiyon, cikarilan, eklenen, sadece) =>
+  `${id}|${porsiyon || ""}|${[...cikarilan].sort().join(",")}|${eklenen.map((e) => e.ad).sort().join(",")}|${sadece || ""}`;
 
 // Kategori / ürün emojileri (görseli olmayan ürünler için)
 const KAT_EMOJI = { "Et Tantuniler": "🥙", "Tavuk Tantuniler": "🌯", "Yeni Ürünler": "⭐", "Çorbalar": "🥣", "Yan Ürünler": "🍟", "İçecekler": "🥤", "Diğer": "🍽️" };
@@ -123,6 +128,15 @@ function urunKarti(u) {
         ${u.cikarilabilir.map((m) => `<button type="button" class="cikar-chip" data-mal="${esc(m)}">${esc(m)}</button>`).join("")}</div>`
     : "";
 
+  // "Normal / Sadece Et" seçimi — porsiyon menüsüyle aynı yerde
+  const sadeceAd = sadeceEtiketi(u);
+  const sadeceHtml = sadeceAd
+    ? `<select class="icerik-sec">
+        <option value="">Normal</option>
+        <option value="${esc(sadeceAd)}">${esc(sadeceAd)}</option>
+      </select>`
+    : "";
+
   const ekleHtml = Array.isArray(u.eklenebilir) && u.eklenebilir.length
     ? `<div class="ozel-grup"><span class="ozel-baslik">Ekstra ekle</span>
         ${u.eklenebilir.map((e) => `<button type="button" class="ekle-chip" data-ad="${esc(e.ad)}" data-fiyat="${e.fiyat}">+ ${esc(e.ad)}${e.fiyat ? " (" + e.fiyat + "₺)" : ""}</button>`).join("")}</div>`
@@ -137,6 +151,7 @@ function urunKarti(u) {
       </div>
       ${u.aciklama ? `<p class="urun-aciklama">${esc(u.aciklama)}</p>` : ""}
       ${porsiyonHtml}
+      ${sadeceHtml}
       ${cikarHtml}
       ${ekleHtml}
       <div class="urun-alt">
@@ -189,12 +204,14 @@ function sepeteEkle(u, kart) {
   const porsiyonFiyat = sec ? Number(sec.options[sec.selectedIndex].dataset.fiyat) : u.fiyat;
   const cikarilan = [...kart.querySelectorAll(".cikar-chip.aktif")].map((c) => c.dataset.mal);
   const eklenen = [...kart.querySelectorAll(".ekle-chip.aktif")].map((c) => ({ ad: c.dataset.ad, fiyat: Number(c.dataset.fiyat) || 0 }));
+  const icerikSec = kart.querySelector(".icerik-sec");
+  const sadece = icerikSec && icerikSec.value ? icerikSec.value : null;
   const birimFiyat = porsiyonFiyat + eklenen.reduce((s, e) => s + e.fiyat, 0);
 
-  const k = anahtar(u.id, porsiyon, cikarilan, eklenen);
+  const k = anahtar(u.id, porsiyon, cikarilan, eklenen, sadece);
   const mevcut = sepet.get(k);
   if (mevcut) mevcut.adet += 1;
-  else sepet.set(k, { urun: u, porsiyon, cikarilan, eklenen, birimFiyat, adet: 1 });
+  else sepet.set(k, { urun: u, porsiyon, cikarilan, eklenen, sadece, birimFiyat, adet: 1 });
 
   guncelleSepetCubugu();
   otoKaydetTetikle(); // aktif siparişteysek değişikliği kaydet
@@ -232,6 +249,13 @@ function cizSepet() {
       const aktif = e.cikarilan.includes(m);
       return `<button type="button" class="cikar-chip${aktif ? " aktif" : ""}" data-tip="cikar" data-deger="${esc(m)}">${esc(m)}</button>`;
     }).join("");
+    const sadeceAd = sadeceEtiketi(e.urun);
+    const sadeceSelect = sadeceAd
+      ? `<select class="icerik-sec ss-icerik">
+          <option value=""${!e.sadece ? " selected" : ""}>Normal</option>
+          <option value="${esc(sadeceAd)}"${e.sadece ? " selected" : ""}>${esc(sadeceAd)}</option>
+        </select>`
+      : "";
     const ekChips = (e.urun.eklenebilir || []).map((x) => {
       const aktif = e.eklenen.some((y) => y.ad === x.ad);
       return `<button type="button" class="ekle-chip${aktif ? " aktif" : ""}" data-tip="ekle" data-deger="${esc(x.ad)}" data-fiyat="${x.fiyat}">+ ${esc(x.ad)}${x.fiyat ? " (" + x.fiyat + "₺)" : ""}</button>`;
@@ -242,6 +266,7 @@ function cizSepet() {
         <span class="s-ad">${esc(e.urun.ad)}${e.porsiyon ? " • " + esc(e.porsiyon) : ""}</span>
         <button class="ss-sil" title="Sepetten çıkar">✕</button>
       </div>
+      ${sadeceSelect}
       ${cikChips ? `<div class="ss-ops"><span class="ss-baslik">İstemediklerin</span>${cikChips}</div>` : ""}
       ${ekChips ? `<div class="ss-ops"><span class="ss-baslik">Ekstra ekle</span>${ekChips}</div>` : ""}
       <div class="ss-alt">
@@ -259,6 +284,8 @@ function cizSepet() {
     row.querySelectorAll("[data-tip]").forEach((chip) => {
       chip.onclick = () => opsiyonDegistir(k, e, chip.dataset.tip, chip.dataset.deger, Number(chip.dataset.fiyat) || 0);
     });
+    const ic = row.querySelector(".ss-icerik");
+    if (ic) ic.onchange = () => { e.sadece = ic.value || null; yenidenAnahtarla(e); guncelleSepetCubugu(); cizSepet(); otoKaydetTetikle(); };
     liste.appendChild(row);
   }
   $("panelToplam").textContent = toplamlar().tutar;
@@ -277,20 +304,25 @@ function opsiyonDegistir(oldKey, e, tip, deger, fiyat) {
     if (i >= 0) e.eklenen.splice(i, 1); else e.eklenen.push({ ad: deger, fiyat });
   }
   e.birimFiyat = porsiyonFiyat + eklenenToplam();
-  // Bu kaleme ait tüm eski anahtarları temizle (referansla), sonra yeni anahtara yerleştir
-  for (const [key, val] of [...sepet.entries()]) { if (val === e) sepet.delete(key); }
-  const yeniKey = anahtar(e.urun.id, e.porsiyon, e.cikarilan, e.eklenen);
-  const mevcut = sepet.get(yeniKey);
-  if (mevcut) mevcut.adet += e.adet; else sepet.set(yeniKey, e);
+  yenidenAnahtarla(e);
   guncelleSepetCubugu();
   cizSepet();
   otoKaydetTetikle();
 }
 
+// Kalemi güncel özelliklerine göre yeniden anahtarla (aynı yapı varsa birleştir)
+function yenidenAnahtarla(e) {
+  for (const [key, val] of [...sepet.entries()]) { if (val === e) sepet.delete(key); }
+  const yeniKey = anahtar(e.urun.id, e.porsiyon, e.cikarilan, e.eklenen, e.sadece);
+  const mevcut = sepet.get(yeniKey);
+  if (mevcut) mevcut.adet += e.adet; else sepet.set(yeniKey, e);
+}
+
 // --- Sepet -> sunucu formatı ---
 function sepetPayload() {
   return [...sepet.values()].map((e) => ({
-    id: e.urun.id, ad: e.urun.ad, porsiyon: e.porsiyon, cikarilan: e.cikarilan, eklenen: e.eklenen, adet: e.adet, fiyat: e.birimFiyat,
+    id: e.urun.id, ad: e.urun.ad, porsiyon: e.porsiyon, sadece: e.sadece || null,
+    cikarilan: e.cikarilan, eklenen: e.eklenen, adet: e.adet, fiyat: e.birimFiyat,
   }));
 }
 
@@ -465,7 +497,8 @@ async function aktifDurumuGeriYukle() {
       const urun = menu.find((m) => m.id === it.id) || { id: it.id, ad: it.ad };
       const cikarilan = it.cikarilan || [];
       const eklenen = it.eklenen || [];
-      sepet.set(anahtar(it.id, it.porsiyon, cikarilan, eklenen), { urun, porsiyon: it.porsiyon || null, cikarilan, eklenen, birimFiyat: it.fiyat, adet: it.adet });
+      const sadece = it.sadece || null;
+      sepet.set(anahtar(it.id, it.porsiyon, cikarilan, eklenen, sadece), { urun, porsiyon: it.porsiyon || null, cikarilan, eklenen, sadece, birimFiyat: it.fiyat, adet: it.adet });
     });
     $("not").value = o.not || "";
     aktifSiparis = a;

@@ -55,6 +55,7 @@ body {
 .k-porsiyon { color: #4aa3df; font-weight: 600; font-size: .85rem; }
 .k-cikar { color: #e67e22; font-size: .8rem; margin-left: 22px; }
 .k-ekle { color: #2ecc71; font-size: .8rem; margin-left: 22px; }
+.k-sadece { color: #f6a821; font-size: .82rem; font-weight: 700; margin-left: 22px; }
 
 /* İptal talebi (müşteriden gelen, admin onayı bekleyen) */
 .kart.iptal-bekliyor { border-left-color: var(--kirmizi); box-shadow: 0 0 0 2px rgba(231,76,60,.4), 0 4px 14px rgba(0,0,0,.35); }

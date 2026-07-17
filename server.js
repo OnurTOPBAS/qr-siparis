@@ -100,6 +100,7 @@ const kalemleriDuzenle = (urunler) =>
     id: Number(u.id) || null,
     ad: String(u.ad || "").slice(0, 100),
     porsiyon: u.porsiyon ? String(u.porsiyon).slice(0, 60) : null,
+    sadece: u.sadece ? String(u.sadece).slice(0, 40) : null,
     cikarilan: Array.isArray(u.cikarilan)
       ? u.cikarilan.slice(0, 10).map((x) => String(x).slice(0, 40))
       : [],

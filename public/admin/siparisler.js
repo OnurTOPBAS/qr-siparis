@@ -57,6 +57,7 @@ function fisYazdir(o) {
   const satirlar = o.urunler.map((u) => {
     const bas = `${u.adet}x ${u.ad}${u.porsiyon ? " (" + u.porsiyon + ")" : ""}`;
     let alt = "";
+    if (u.sadece) alt += `<div class="fs-not"><b>** ${esc(u.sadece.toUpperCase())} **</b></div>`;
     if (u.cikarilan && u.cikarilan.length) alt += `<div class="fs-not">- ${esc(u.cikarilan.join(", "))} YOK</div>`;
     if (u.eklenen && u.eklenen.length) alt += `<div class="fs-not">+ ${esc(u.eklenen.map((e) => e.ad).join(", "))}</div>`;
     return `<div class="fs-satir"><span>${esc(bas)}</span><span>${u.fiyat * u.adet} TL</span></div>${alt}`;
@@ -110,9 +111,10 @@ function kartEkle(o, yeniMi) {
   const saat = new Date(o.tarih).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
   const urunler = o.urunler.map((u) => {
     const porsiyon = u.porsiyon ? ` <span class="k-porsiyon">${esc(u.porsiyon)}</span>` : "";
+    const sadece = u.sadece ? `<div class="k-sadece">⚡ ${esc(u.sadece.toUpperCase())}</div>` : "";
     const cikar = (u.cikarilan && u.cikarilan.length) ? `<div class="k-cikar">🚫 ${esc(u.cikarilan.join(", "))}</div>` : "";
     const ekle = (u.eklenen && u.eklenen.length) ? `<div class="k-ekle">➕ ${esc(u.eklenen.map((e) => e.ad).join(", "))}</div>` : "";
-    return `<li><span class="adet">${u.adet}×</span> ${esc(u.ad)}${porsiyon}${cikar}${ekle}</li>`;
+    return `<li><span class="adet">${u.adet}×</span> ${esc(u.ad)}${porsiyon}${sadece}${cikar}${ekle}</li>`;
   }).join("");
   const notHtml = o.not ? `<div class="not">📝 ${esc(o.not)}</div>` : "";
   const iptalHtml = o.iptalTalebi ? `

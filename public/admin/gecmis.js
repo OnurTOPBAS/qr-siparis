@@ -22,9 +22,10 @@ async function yukle() {
       : '<span class="rozet gri">Bekliyor</span>';
     const urunler = o.urunler.map((u) => {
       const porsiyon = u.porsiyon ? ` <span class="k-porsiyon">${esc(u.porsiyon)}</span>` : "";
+      const sadece = u.sadece ? ` <span class="k-sadece">⚡ ${esc(u.sadece)}</span>` : "";
       const cikar = (u.cikarilan && u.cikarilan.length) ? ` <span class="k-cikar">🚫 ${esc(u.cikarilan.join(", "))}</span>` : "";
       const ekle = (u.eklenen && u.eklenen.length) ? ` <span class="k-ekle">➕ ${esc(u.eklenen.map((e) => e.ad).join(", "))}</span>` : "";
-      return `<li><b>${u.adet}×</b> ${esc(u.ad)}${porsiyon}${cikar}${ekle}</li>`;
+      return `<li><b>${u.adet}×</b> ${esc(u.ad)}${porsiyon}${sadece}${cikar}${ekle}</li>`;
     }).join("");
 
     const kart = document.createElement("div");
