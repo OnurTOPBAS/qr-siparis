@@ -45,6 +45,8 @@ if (!config) {
   yaz(CONFIG_PATH, config);
 }
 if (config.googleYorumUrl === undefined) { config.googleYorumUrl = ""; yaz(CONFIG_PATH, config); }
+// Oturum imza anahtarı: yoksa rastgele üret ve sakla (sabit hardcoded anahtar güvensiz)
+if (!config.sessionSecret) { config.sessionSecret = crypto.randomBytes(32).toString("hex"); yaz(CONFIG_PATH, config); }
 
 // --- Siparişler ---
 let orders = oku(ORDERS_PATH, []);
@@ -63,7 +65,7 @@ const kaydetTables = () => yaz(TABLES_PATH, tables);
 app.use(express.json());
 app.use(
   session({
-    secret: "qr-siparis-gizli-anahtar-degistir",
+    secret: config.sessionSecret,
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 1000 * 60 * 60 * 12 }, // 12 saat
@@ -99,21 +101,64 @@ app.get("/api/menu", (_req, res) => res.json(oku(MENU_PATH, { urunler: [] })));
 // Müşteri tarafı ayarlar (şifre vb. sızdırmadan)
 app.get("/api/ayarlar", (_req, res) => res.json({ siteAdi: config.siteAdi || "", googleYorumUrl: config.googleYorumUrl || "" }));
 
-const kalemleriDuzenle = (urunler) =>
-  urunler.map((u) => ({
-    id: Number(u.id) || null,
-    ad: String(u.ad || "").slice(0, 100),
-    porsiyon: u.porsiyon ? String(u.porsiyon).slice(0, 60) : null,
-    sadece: u.sadece ? String(u.sadece).slice(0, 40) : null,
-    cikarilan: Array.isArray(u.cikarilan)
-      ? u.cikarilan.slice(0, 10).map((x) => String(x).slice(0, 40))
-      : [],
-    eklenen: Array.isArray(u.eklenen)
-      ? u.eklenen.slice(0, 10).map((e) => ({ ad: String(e.ad || "").slice(0, 40), fiyat: Number(e.fiyat) || 0 }))
-      : [],
-    adet: Math.max(1, parseInt(u.adet, 10) || 1),
-    fiyat: Number(u.fiyat) || 0,
-  }));
+// Bağış: menüde olmayan özel kalem, fiyatı sunucuda sabit
+const BAGIS_ID = 9999;
+const BAGIS_AD = "Sokak Hayvanlarına Bağış 🐾";
+const BAGIS_FIYAT = 100;
+
+// GÜVENLİK: fiyat ve ürün adı istemciden ASLA kabul edilmez.
+// Her kalem menüden doğrulanır, fiyat sunucuda hesaplanır.
+function kalemleriDuzenle(urunler) {
+  const menu = oku(MENU_PATH, { urunler: [] });
+  const kalemler = [];
+
+  for (const u of (Array.isArray(urunler) ? urunler : []).slice(0, 50)) {
+    const id = Number(u?.id) || null;
+    const adet = Math.min(50, Math.max(1, parseInt(u?.adet, 10) || 1));
+
+    if (id === BAGIS_ID) {
+      kalemler.push({ id, ad: BAGIS_AD, porsiyon: null, sadece: null, cikarilan: [], eklenen: [], adet, fiyat: BAGIS_FIYAT });
+      continue;
+    }
+
+    const mu = menu.urunler.find((x) => x.id === id);
+    if (!mu) continue; // menüde yoksa siparişe alınmaz
+
+    // Fiyat: porsiyon varsa onun fiyatı, yoksa ürün fiyatı
+    let porsiyon = null;
+    let birim = Number(mu.fiyat) || 0;
+    if (Array.isArray(mu.porsiyonlar) && mu.porsiyonlar.length) {
+      const p = mu.porsiyonlar.find((x) => x.ad === u?.porsiyon) || mu.porsiyonlar[0];
+      porsiyon = p.ad;
+      birim = Number(p.fiyat) || 0;
+    }
+
+    // Sadece menüde tanımlı malzemeler çıkarılabilir
+    const izinliCikar = Array.isArray(mu.cikarilabilir) ? mu.cikarilabilir : [];
+    const cikarilan = Array.isArray(u?.cikarilan)
+      ? [...new Set(u.cikarilan.filter((x) => izinliCikar.includes(x)))].slice(0, 10)
+      : [];
+
+    // Ekstralar: sadece menüde tanımlı olanlar, menüdeki fiyatıyla
+    const eklenen = [];
+    if (Array.isArray(u?.eklenen)) {
+      for (const e of u.eklenen.slice(0, 10)) {
+        const me = (mu.eklenebilir || []).find((x) => x.ad === e?.ad);
+        if (me && !eklenen.some((y) => y.ad === me.ad)) {
+          eklenen.push({ ad: me.ad, fiyat: Number(me.fiyat) || 0 });
+          birim += Number(me.fiyat) || 0;
+        }
+      }
+    }
+
+    // "Sadece Et/Tavuk" yalnızca tantunilerde geçerli
+    const sadece = izinliCikar.length && /^Sadece /i.test(String(u?.sadece || ""))
+      ? String(u.sadece).slice(0, 40) : null;
+
+    kalemler.push({ id, ad: mu.ad, porsiyon, sadece, cikarilan, eklenen, adet, fiyat: Math.max(0, birim) });
+  }
+  return kalemler;
+}
 // Admin'e giden kopyada gizli token'ı sızdırma
 const gizle = (o) => { const { token, ...rest } = o; return rest; };
 
@@ -123,6 +168,7 @@ app.post("/api/order", (req, res) => {
     return res.status(400).json({ error: "Masa ve en az bir ürün gerekli" });
   }
   const items = kalemleriDuzenle(urunler);
+  if (!items.length) return res.status(400).json({ error: "Geçerli ürün bulunamadı" });
   const masaAd = String(masa).slice(0, 20);
   // Bu masanın bugünkü kaçıncı siparişi?
   const bugunBasi = new Date(); bugunBasi.setHours(0, 0, 0, 0);
@@ -159,7 +205,9 @@ app.put("/api/order/:id", (req, res) => {
   if (o.durum !== "yeni") return res.status(409).json({ error: "Sipariş hazırlanıyor, artık düzenlenemez" });
   const { urunler, not } = req.body || {};
   if (!Array.isArray(urunler) || urunler.length === 0) return res.status(400).json({ error: "En az bir ürün gerekli" });
-  o.urunler = kalemleriDuzenle(urunler);
+  const yeniKalemler = kalemleriDuzenle(urunler);
+  if (!yeniKalemler.length) return res.status(400).json({ error: "Geçerli ürün bulunamadı" });
+  o.urunler = yeniKalemler;
   o.not = String(not || "").slice(0, 300);
   o.toplam = o.urunler.reduce((s, i) => s + i.fiyat * i.adet, 0);
   kaydetOrders();
