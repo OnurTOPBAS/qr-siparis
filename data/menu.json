@@ -509,15 +509,6 @@
       "kalori": "45"
     },
     {
-      "id": 36,
-      "ad": "Tropicana",
-      "kategori": "İçecekler",
-      "fiyat": 80,
-      "resim": "img/icetea.jpg",
-      "aciklama": "",
-      "kalori": "120"
-    },
-    {
       "id": 37,
       "ad": "Ayran",
       "kategori": "İçecekler",
