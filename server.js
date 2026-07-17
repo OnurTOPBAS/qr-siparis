@@ -46,7 +46,7 @@ if (!config) {
 }
 if (config.googleYorumUrl === undefined) { config.googleYorumUrl = ""; yaz(CONFIG_PATH, config); }
 // Oturum imza anahtarı: yoksa rastgele üret ve sakla (sabit hardcoded anahtar güvensiz)
-if (!config.sessionSecret) { config.sessionSecret = crypto.randomBytes(32).toString("hex"); yaz(CONFIG_PATH, config); }
+if (!config.sessionSecret) { config.sessionSecret = crypto.randomUUID() + crypto.randomUUID(); yaz(CONFIG_PATH, config); }
 
 // --- Siparişler ---
 let orders = oku(ORDERS_PATH, []);
