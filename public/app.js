@@ -118,7 +118,7 @@ function urunKarti(u) {
   const basFiyat = porsiyonlu ? u.porsiyonlar[0].fiyat : u.fiyat;
   const basKalori = (porsiyonlu && u.porsiyonlar[0].kalori) || u.kalori || "";
 
-  const medalyon = `<div class="urun-medalyon"><span class="medalyon-emoji">${urunEmoji(u)}</span>${u.resim ? `<img src="/${esc(u.resim)}" alt="" onerror="this.remove()">` : ""}</div>`;
+  const medalyon = `<div class="urun-medalyon"><span class="medalyon-emoji">${urunEmoji(u)}</span>${u.resim ? `<img src="/${esc(u.resim)}" alt="${esc(u.ad)}" loading="lazy" width="78" height="78" onerror="this.remove()">` : ""}</div>`;
 
   const porsiyonHtml = porsiyonlu
     ? `<select class="porsiyon-sec">
@@ -296,16 +296,16 @@ function cizSepet() {
     row.innerHTML = `
       <div class="ss-ust">
         <span class="s-ad">${esc(e.urun.ad)}${e.porsiyon ? " • " + esc(e.porsiyon) : ""}</span>
-        <button class="ss-sil" title="Sepetten çıkar">✕</button>
+        <button class="ss-sil" title="Sepetten çıkar" aria-label="${esc(e.urun.ad)} ürününü sepetten çıkar">✕</button>
       </div>
       ${cikChips ? `<div class="ss-ops"><span class="ss-baslik">İstemediklerin</span>${cikChips}</div>` : ""}
       ${sadeceSelect}
       ${ekChips ? `<div class="ss-ops"><span class="ss-baslik">Ekstra ekle</span>${ekChips}</div>` : ""}
       <div class="ss-alt">
         <div class="adet-kontrol">
-          <button class="eksi">−</button>
-          <span class="adet">${e.adet}</span>
-          <button class="arti">+</button>
+          <button class="eksi" aria-label="${esc(e.urun.ad)} adetini azalt">−</button>
+          <span class="adet" aria-live="polite">${e.adet}</span>
+          <button class="arti" aria-label="${esc(e.urun.ad)} adetini artır">+</button>
         </div>
         <span class="s-fiyat">${e.birimFiyat * e.adet} ₺</span>
       </div>`;
