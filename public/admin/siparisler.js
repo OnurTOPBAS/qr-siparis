@@ -20,10 +20,17 @@ $("sesAc").onclick = () => {
   zilSesi.play().catch(() => {}); // tarayıcı kilidini aç + test sesi
 };
 
+let zilDurdurZamanlayici = null;
 function bipCal() {
   if (!sesAcik) return;
+  clearTimeout(zilDurdurZamanlayici);
   zilSesi.currentTime = 0; // arka arkaya siparişlerde baştan çalsın
   zilSesi.play().catch(() => {});
+  // 2 saniye sonra durdur
+  zilDurdurZamanlayici = setTimeout(() => {
+    zilSesi.pause();
+    zilSesi.currentTime = 0;
+  }, 2000);
 }
 
 // --- Termal fiş yazdırma ---
