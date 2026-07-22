@@ -3,7 +3,8 @@ const $ = (id) => document.getElementById(id);
 const siparislerEl = $("siparisler");
 
 let sesAcik = false;
-let audioCtx = null;
+const zilSesi = new Audio("/sounds/zil.mp3");
+zilSesi.volume = 1.0; // ses seviyesi: 0.0 – 1.0
 
 // Çıkış
 $("cikis").onclick = async () => {
@@ -11,31 +12,18 @@ $("cikis").onclick = async () => {
   location.href = "/admin/login";
 };
 
-// --- Bildirim sesi (dosyasız, Web Audio "ding") ---
+// --- Bildirim sesi (MP3) ---
 $("sesAc").onclick = () => {
-  audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-  audioCtx.resume();
   sesAcik = true;
   $("sesAc").textContent = "🔊 Ses Açık";
   $("sesAc").classList.add("aktif");
-  bipCal();
+  zilSesi.play().catch(() => {}); // tarayıcı kilidini aç + test sesi
 };
 
 function bipCal() {
-  if (!sesAcik || !audioCtx) return;
-  const now = audioCtx.currentTime;
-  [0, 0.18].forEach((g) => {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = "sine";
-    osc.frequency.value = 880;
-    gain.gain.setValueAtTime(0.001, now + g);
-    gain.gain.exponentialRampToValueAtTime(0.4, now + g + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + g + 0.15);
-    osc.connect(gain).connect(audioCtx.destination);
-    osc.start(now + g);
-    osc.stop(now + g + 0.16);
-  });
+  if (!sesAcik) return;
+  zilSesi.currentTime = 0; // arka arkaya siparişlerde baştan çalsın
+  zilSesi.play().catch(() => {});
 }
 
 // --- Termal fiş yazdırma ---
