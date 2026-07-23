@@ -205,12 +205,12 @@ body {
 
 .urun-medalyon {
   position: relative; flex: 0 0 auto;
-  width: 78px; height: 78px; border-radius: 16px;
+  width: 106px; height: 106px; border-radius: 18px;
   background: linear-gradient(145deg, #ffe9cf, #ffd7a8);
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
 }
-.medalyon-emoji { font-size: 2.2rem; }
+.medalyon-emoji { font-size: 3rem; }
 .urun-medalyon img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
 .urun-bilgi { flex: 1; min-width: 0; display: flex; flex-direction: column; }

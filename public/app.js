@@ -118,7 +118,7 @@ function urunKarti(u) {
   const basFiyat = porsiyonlu ? u.porsiyonlar[0].fiyat : u.fiyat;
   const basKalori = (porsiyonlu && u.porsiyonlar[0].kalori) || u.kalori || "";
 
-  const medalyon = `<div class="urun-medalyon"><span class="medalyon-emoji">${urunEmoji(u)}</span>${u.resim ? `<img src="/${esc(u.resim)}" alt="${esc(u.ad)}" loading="lazy" width="78" height="78" onerror="this.remove()">` : ""}</div>`;
+  const medalyon = `<div class="urun-medalyon"><span class="medalyon-emoji">${urunEmoji(u)}</span>${u.resim ? `<img src="/${esc(u.resim)}" alt="${esc(u.ad)}" loading="lazy" width="106" height="106" onerror="this.remove()">` : ""}</div>`;
 
   const porsiyonHtml = porsiyonlu
     ? `<select class="porsiyon-sec">
