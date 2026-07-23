@@ -87,8 +87,9 @@ body {
 .yazdir-btn:active { transform: scale(.95); }
 #fis { display: none; }
 @media print {
-  @page { size: 80mm auto; margin: 2mm; }
+  @page { size: 80mm auto; margin: 0; }
   html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
+  #fis { padding: 2mm 1mm 0; }
   body > *:not(#fis) { display: none !important; }
   #fis { display: block !important; width: 76mm; margin: 0; color: #000; font-family: Arial, "Helvetica", sans-serif; font-size: 16px; font-weight: 700; line-height: 1.35; }
   #fis .fs-baslik { text-align: center; font-size: 25px; font-weight: 800; letter-spacing: .5px; }
