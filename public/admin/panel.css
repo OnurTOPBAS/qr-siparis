@@ -87,19 +87,19 @@ body {
 .yazdir-btn:active { transform: scale(.95); }
 #fis { display: none; }
 @media print {
-  @page { size: 80mm auto; margin: 3mm; }
-  body { background: #fff !important; }
+  @page { size: 80mm auto; margin: 2mm; }
+  html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
   body > *:not(#fis) { display: none !important; }
-  #fis { display: block !important; width: 74mm; color: #000; font-family: "Courier New", monospace; font-size: 12.5px; line-height: 1.4; }
-  #fis .fs-baslik { text-align: center; font-size: 17px; font-weight: 700; letter-spacing: 1px; }
-  #fis .fs-orta { text-align: center; font-weight: 700; margin-top: 2px; }
-  #fis .fs-orta2 { text-align: center; font-size: 11px; }
-  #fis .fs-cizgi { border-top: 1px dashed #000; margin: 5px 0; }
+  #fis { display: block !important; width: 76mm; margin: 0; color: #000; font-family: Arial, "Helvetica", sans-serif; font-size: 16px; font-weight: 700; line-height: 1.35; }
+  #fis .fs-baslik { text-align: center; font-size: 25px; font-weight: 800; letter-spacing: .5px; }
+  #fis .fs-orta { text-align: center; font-weight: 800; font-size: 17px; margin-top: 2px; }
+  #fis .fs-orta2 { text-align: center; font-size: 14px; font-weight: 700; }
+  #fis .fs-cizgi { border-top: 2px dashed #000; margin: 6px 0; }
   #fis .fs-satir { display: flex; justify-content: space-between; gap: 8px; }
-  #fis .fs-not { padding-left: 12px; font-size: 11px; }
-  #fis .fs-toplam { font-weight: 700; font-size: 15px; }
-  #fis .fs-not2 { font-weight: 700; }
-  #fis .fs-alt-yazi { text-align: center; margin-top: 8px; }
+  #fis .fs-not { padding-left: 10px; font-size: 15px; font-weight: 700; }
+  #fis .fs-toplam { font-weight: 800; font-size: 21px; }
+  #fis .fs-not2 { font-weight: 800; }
+  #fis .fs-alt-yazi { text-align: center; margin-top: 8px; font-weight: 700; }
 }
 .not {
   background: #2d2a1a; border: 1px solid #4a4426; color: #f5d97a;
