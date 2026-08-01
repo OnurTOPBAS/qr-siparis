@@ -12,7 +12,7 @@ form.onsubmit = async (e) => {
       body: JSON.stringify({ sifre }),
     });
     if (r.ok) {
-      location.href = "/admin";
+      location.href = "/panel";
     } else {
       hata.textContent = "Şifre hatalı, tekrar deneyin.";
     }

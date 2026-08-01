@@ -232,7 +232,7 @@ app.delete("/api/order/:id", (_req, res) => res.status(403).json({ error: "İpta
 
 // ============ ADMIN GİRİŞ ============
 app.get("/admin/login", (req, res) => {
-  if (req.session?.giris) return res.redirect("/admin");
+  if (req.session?.giris) return res.redirect("/panel");
   res.sendFile(join(VIEWS, "login.html"));
 });
 app.post("/admin/login", (req, res) => {
@@ -247,7 +247,7 @@ app.post("/admin/logout", (req, res) => {
 });
 
 // ============ ADMIN (korumalı) ============
-app.get("/admin", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "siparisler.html")));
+app.get(["/admin", "/panel"], girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "siparisler.html"))); // /panel: hosting WAF /admin/ yolunu resetlediği için alternatif adres
 app.get("/admin/menu", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "menu.html")));
 app.get("/admin/masalar", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "masalar.html")));
 app.get("/admin/rapor", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "rapor.html")));
