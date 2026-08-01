@@ -13,7 +13,7 @@ const siparislerEl = $("siparisler");
 
 let sesAcik = false;
 const zilSesi = new Audio("/sounds/zil.mp3");
-zilSesi.volume = 3.0; // ses seviyesi: 0.0 – 1.0
+zilSesi.volume = 1.0; // ses seviyesi: en fazla 1.0 (üstü hata verir, kod durur!)
 
 // Çıkış
 $("cikis").onclick = async () => {
