@@ -1,10 +1,19 @@
-const socket = io();
+// WebSocket bu sunucuda (LiteSpeed) kapalı; doğrudan polling'e sabitliyoruz.
+// Böylece başarısız websocket denemesi bağlantıyı takmaz + uygulama uyanırken kopmaz.
+const socket = io({
+  transports: ["polling"],
+  upgrade: false,
+  reconnection: true,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 3000,
+  timeout: 20000,
+});
 const $ = (id) => document.getElementById(id);
 const siparislerEl = $("siparisler");
 
 let sesAcik = false;
 const zilSesi = new Audio("/sounds/zil.mp3");
-zilSesi.volume = 1.0; // ses seviyesi: 0.0 – 1.0
+zilSesi.volume = 3.0; // ses seviyesi: 0.0 – 1.0
 
 // Çıkış
 $("cikis").onclick = async () => {
