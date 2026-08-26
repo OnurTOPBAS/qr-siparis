@@ -54,6 +54,14 @@ function ciz() {
   });
 }
 
+// Porsiyon varsa üstteki "Fiyat" kutusunu gizle (o üründe kullanılmıyor, kafa karıştırıyor)
+function fiyatGrupGuncelle() {
+  const porsiyonVar = $("porsiyonListe").children.length > 0;
+  $("fiyatGrup").hidden = porsiyonVar;
+  $("fiyat").required = !porsiyonVar; // gizliyken required olursa form kilitlenir
+  if (porsiyonVar) $("fiyat").value = 0;
+}
+
 // --- Porsiyon satırı editörü ---
 function porsiyonSatiri(p = {}) {
   const div = document.createElement("div");
@@ -63,10 +71,10 @@ function porsiyonSatiri(p = {}) {
     <input class="p-fiyat" type="number" min="0" placeholder="₺" value="${p.fiyat ?? ""}" />
     <input class="p-kalori" placeholder="Kalori" value="${esc(p.kalori || "")}" />
     <button type="button" class="p-sil">✕</button>`;
-  div.querySelector(".p-sil").onclick = () => div.remove();
+  div.querySelector(".p-sil").onclick = () => { div.remove(); fiyatGrupGuncelle(); };
   return div;
 }
-$("porsiyonEkle").onclick = () => $("porsiyonListe").appendChild(porsiyonSatiri());
+$("porsiyonEkle").onclick = () => { $("porsiyonListe").appendChild(porsiyonSatiri()); fiyatGrupGuncelle(); };
 
 // --- Ekstra (eklenebilir) malzeme satırı ---
 function ekstraSatiri(e = {}) {
@@ -100,6 +108,7 @@ function modalAc(u) {
   const pl = $("porsiyonListe");
   pl.innerHTML = "";
   (u?.porsiyonlar || []).forEach((p) => pl.appendChild(porsiyonSatiri(p)));
+  fiyatGrupGuncelle(); // porsiyon varsa üstteki Fiyat kutusunu gizle
 
   // Çıkarılabilir malzemeler
   const secili = new Set(u?.cikarilabilir || []);

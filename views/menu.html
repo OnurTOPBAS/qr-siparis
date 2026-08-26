@@ -43,8 +43,8 @@
         <input type="text" id="kategori" list="kategoriListe" required maxlength="50" placeholder="Örn: İçecekler" />
         <datalist id="kategoriListe"></datalist>
       </div>
-      <div class="form-grup">
-        <label>Fiyat (₺) * <small>(porsiyonlu üründe taban fiyat, boş bırakılabilir → 0)</small></label>
+      <div class="form-grup" id="fiyatGrup">
+        <label>Fiyat (₺) *</label>
         <input type="number" id="fiyat" required min="0" step="1" value="0" />
       </div>
       <div class="form-grup">
@@ -94,6 +94,6 @@
     </form>
   </div>
 
-  <script src="/admin/menu.js"></script>
+  <script src="/admin/menu.js?v=2"></script>
 </body>
 </html>
