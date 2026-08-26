@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=3" />
+  <link rel="stylesheet" href="style.css?v=4" />
 </head>
 <body>
   <!-- Kapak (hero) -->
@@ -84,9 +84,36 @@
     </div>
   </div>
 
+  <!-- Paket servis: teslimat + ödeme formu -->
+  <div id="paketPanel" class="panel" hidden>
+    <div class="panel-ic">
+      <div class="panel-tutamac"></div>
+      <div class="panel-baslik">
+        <h2>📦 Teslimat Bilgileri</h2>
+        <button id="paketKapat" class="kapat" aria-label="Kapat">✕</button>
+      </div>
+      <div class="pk-form">
+        <label class="pk-alan"><span>Ad Soyad *</span><input id="pkAd" type="text" maxlength="60" autocomplete="name" placeholder="Adınız Soyadınız" /></label>
+        <label class="pk-alan"><span>Telefon *</span><input id="pkTel" type="tel" maxlength="20" autocomplete="tel" placeholder="05XX XXX XX XX" /></label>
+        <label class="pk-alan"><span>Mahalle / İlçe</span><input id="pkMahalle" type="text" maxlength="80" placeholder="Örn: Merkez Mah. / Akdeniz" /></label>
+        <label class="pk-alan"><span>Açık Adres *</span><textarea id="pkAdres" rows="3" maxlength="300" placeholder="Sokak, bina no, daire, kat ve tarif"></textarea></label>
+        <div class="pk-odeme">
+          <span class="pk-odeme-baslik">Ödeme Yöntemi *</span>
+          <label class="pk-secim"><input type="radio" name="odeme" value="nakit" checked /><span>💵 Kapıda Nakit</span></label>
+          <label class="pk-secim"><input type="radio" name="odeme" value="kart" /><span>💳 Kapıda Kredi Kartı</span></label>
+          <label class="pk-secim"><input type="radio" name="odeme" value="yemekkart" /><span>🍽️ Yemek Kartı (Kapıda)</span></label>
+          <label class="pk-secim pasif"><input type="radio" name="odeme" value="online" disabled /><span>🌐 Online Ödeme <small>(yakında)</small></span></label>
+        </div>
+      </div>
+      <div class="pk-hata" id="pkHata" hidden></div>
+      <div class="panel-toplam">Toplam <strong><span id="pkToplam">0</span> ₺</strong></div>
+      <button id="paketOnayBtn" class="siparis-btn">Siparişi Gönder</button>
+    </div>
+  </div>
+
   <!-- Toast bildirimi -->
   <div id="toast" class="toast" hidden></div>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>

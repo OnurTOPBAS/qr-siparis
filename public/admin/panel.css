@@ -40,6 +40,17 @@ body {
   border-left: 5px solid var(--sari); box-shadow: 0 4px 12px rgba(0,0,0,.3);
 }
 .kart.yeni { animation: parla 1s ease-in-out 3; border-left-color: var(--yesil); }
+/* Paket (eve sipariş) kartı: mavi vurgu + teslimat kutusu */
+.kart.paket { border-left-color: #3ea6ff; }
+.teslimat {
+  background: rgba(62,166,255,.1); border: 1px solid rgba(62,166,255,.35);
+  border-radius: 10px; padding: 10px 12px; margin: 4px 0 10px; display: flex; flex-direction: column; gap: 5px;
+}
+.teslimat .t-satir { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.teslimat b { color: #fff; font-size: 1.05rem; }
+.teslimat .t-tel { color: #3ea6ff; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.teslimat .t-adres { color: #e8e8e8; font-size: .95rem; line-height: 1.4; }
+.teslimat .t-odeme { color: var(--sari); font-weight: 700; font-size: .95rem; }
 @keyframes parla {
   0%, 100% { box-shadow: 0 4px 12px rgba(0,0,0,.3); }
   50% { box-shadow: 0 0 0 3px var(--yesil), 0 4px 20px rgba(46,204,113,.5); }

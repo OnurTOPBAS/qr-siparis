@@ -162,28 +162,48 @@ function kalemleriDuzenle(urunler) {
 // Admin'e giden kopyada gizli token'ı sızdırma
 const gizle = (o) => { const { token, ...rest } = o; return rest; };
 
+// Geçerli ödeme yöntemleri (online/iyzico henüz yok)
+const GECERLI_ODEME = { nakit: "Kapıda Nakit", kart: "Kapıda Kredi Kartı", yemekkart: "Yemek Kartı (Kapıda)" };
+
 app.post("/api/order", (req, res) => {
-  const { masa, urunler, not } = req.body || {};
-  if (!masa || !Array.isArray(urunler) || urunler.length === 0) {
-    return res.status(400).json({ error: "Masa ve en az bir ürün gerekli" });
+  const { masa, urunler, not, tip, musteri, odeme } = req.body || {};
+  if (!Array.isArray(urunler) || urunler.length === 0) {
+    return res.status(400).json({ error: "En az bir ürün gerekli" });
+  }
+  const paketMi = tip === "paket";
+  let masaAd, teslimat = null;
+  if (paketMi) {
+    // Eve sipariş: adres + ödeme zorunlu, masa yok
+    const ad = String(musteri?.ad || "").trim().slice(0, 60);
+    const telefon = String(musteri?.telefon || "").trim().slice(0, 20);
+    const mahalle = String(musteri?.mahalle || "").trim().slice(0, 80);
+    const adres = String(musteri?.adres || "").trim().slice(0, 300);
+    if (!ad || !telefon || !adres) return res.status(400).json({ error: "Ad, telefon ve açık adres zorunlu" });
+    if (!GECERLI_ODEME[odeme]) return res.status(400).json({ error: "Geçerli bir ödeme yöntemi seçin" });
+    teslimat = { ad, telefon, mahalle, adres, odeme, odemeAd: GECERLI_ODEME[odeme] };
+    masaAd = "📦 Paket";
+  } else {
+    if (!masa) return res.status(400).json({ error: "Masa gerekli" });
+    masaAd = String(masa).slice(0, 20);
   }
   const items = kalemleriDuzenle(urunler);
   if (!items.length) return res.status(400).json({ error: "Geçerli ürün bulunamadı" });
-  const masaAd = String(masa).slice(0, 20);
-  // Bu masanın bugünkü kaçıncı siparişi?
+  // Günlük sıra: paket ise paketler arasında, masa ise o masaya özel
   const bugunBasi = new Date(); bugunBasi.setHours(0, 0, 0, 0);
-  const masaBugunAdet = orders.filter((x) => x.masa === masaAd && new Date(x.tarih) >= bugunBasi).length;
+  const bugunAdet = orders.filter((x) => (paketMi ? x.tip === "paket" : x.masa === masaAd) && new Date(x.tarih) >= bugunBasi).length;
   const order = {
     id: nextId++,
     token: crypto.randomUUID(), // sadece sipariş sahibinin düzenleyebilmesi için
     masa: masaAd,
-    siraNo: masaBugunAdet + 1, // masa bazlı günlük sıra
+    tip: paketMi ? "paket" : "masa",
+    siraNo: bugunAdet + 1,
     urunler: items,
     not: String(not || "").slice(0, 300),
     toplam: items.reduce((s, i) => s + i.fiyat * i.adet, 0),
     durum: "yeni",
     tarih: new Date().toISOString(),
   };
+  if (teslimat) order.teslimat = teslimat;
   orders.push(order);
   kaydetOrders();
   io.emit("newOrder", gizle(order));

@@ -1,7 +1,13 @@
-// Masa numarasını QR linkinden al: /?masa=5
+// Masa numarasını QR linkinden al: /?masa=5  (masa yoksa PAKET SERVİS modu)
 const params = new URLSearchParams(location.search);
-const masa = params.get("masa") || "1";
-document.getElementById("masaNo").textContent = masa;
+const masaParam = params.get("masa");
+const paketMi = !masaParam;               // ?masa= yoksa eve sipariş (paket)
+const masa = masaParam || "Paket";
+if (paketMi) {
+  document.querySelector(".masa-rozet").innerHTML = "📦 Paket Servis — Eve Sipariş";
+} else {
+  document.getElementById("masaNo").textContent = masa;
+}
 
 let menu = [];
 // sepet: key -> { urun, porsiyon, cikarilan[], eklenen[{ad,fiyat}], birimFiyat, adet }
@@ -370,35 +376,76 @@ function panelModunuAyarla() {
 // Not değişince de (aktif siparişte) kaydet
 $("not").oninput = otoKaydetTetikle;
 
+// Siparişi sunucuya gönder (masa: doğrudan; paket: adres formundan gelen bilgilerle)
+async function siparisGonder(ekstra) {
+  const r = await fetch("/api/order", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ masa, urunler: sepetPayload(), not: $("not").value.trim(), ...ekstra }),
+  });
+  if (!r.ok) { const d = await r.json().catch(() => ({})); throw new Error(d.error || "gonder"); }
+  const d = await r.json();
+  aktifSiparis = { id: d.id, token: d.token, deadline: Date.now() + DUZENLEME_SURESI };
+  aktifYaz(aktifSiparis);
+  panelModunuAyarla();
+  sayacBaslat();
+  gosterToast("Siparişin alındı! 1.5 dk içinde ekleme/değişiklik yapabilirsin 🧡");
+}
+
 // --- Gönder / Kaydet butonu ---
 $("siparisVerBtn").onclick = async () => {
   if (sepet.size === 0) return;
-  const btn = $("siparisVerBtn");
-  btn.disabled = true;
-  const eskiMetin = btn.textContent;
-  btn.textContent = aktifSiparis ? "Kaydediliyor..." : "Gönderiliyor...";
-  try {
-    if (aktifSiparis) {
-      await kaydet(true);
-    } else {
-      const r = await fetch("/api/order", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ masa, urunler: sepetPayload(), not: $("not").value.trim() }),
-      });
-      if (!r.ok) throw new Error("gonder");
-      const d = await r.json();
-      aktifSiparis = { id: d.id, token: d.token, deadline: Date.now() + DUZENLEME_SURESI };
-      aktifYaz(aktifSiparis);
-      panelModunuAyarla();
-      sayacBaslat();
-      gosterToast("Siparişin alındı! 1.5 dk içinde ekleme/değişiklik yapabilirsin 🧡");
-    }
-  } catch {
-    alert("İşlem başarısız, lütfen tekrar deneyin.");
-    btn.textContent = eskiMetin;
-  } finally {
-    btn.disabled = false;
+  // Aktif siparişte: değişiklikleri kaydet
+  if (aktifSiparis) {
+    const btn = $("siparisVerBtn"); btn.disabled = true; const em = btn.textContent; btn.textContent = "Kaydediliyor...";
+    try { await kaydet(true); } catch { alert("İşlem başarısız, lütfen tekrar deneyin."); btn.textContent = em; } finally { btn.disabled = false; }
+    return;
   }
+  // Paket modunda: önce adres + ödeme formunu aç
+  if (paketMi) { paketFormAc(); return; }
+  // Masa modunda: doğrudan gönder
+  const btn = $("siparisVerBtn"); btn.disabled = true; const em = btn.textContent; btn.textContent = "Gönderiliyor...";
+  try { await siparisGonder({}); } catch { alert("İşlem başarısız, lütfen tekrar deneyin."); btn.textContent = em; } finally { btn.disabled = false; }
+};
+
+// --- Paket servis: teslimat + ödeme formu ---
+const PK_KEY = "paketAdres";
+function paketFormAc() {
+  try {
+    const s = JSON.parse(localStorage.getItem(PK_KEY) || "{}"); // önceki adresi hatırla
+    if (s.ad) $("pkAd").value = s.ad;
+    if (s.telefon) $("pkTel").value = s.telefon;
+    if (s.mahalle) $("pkMahalle").value = s.mahalle;
+    if (s.adres) $("pkAdres").value = s.adres;
+  } catch {}
+  $("pkToplam").textContent = [...sepet.values()].reduce((s, e) => s + e.birimFiyat * e.adet, 0);
+  $("pkHata").hidden = true;
+  $("paketPanel").hidden = false;
+  document.body.style.overflow = "hidden";
+}
+function paketFormKapat() { $("paketPanel").hidden = true; document.body.style.overflow = ""; }
+$("paketKapat").onclick = paketFormKapat;
+
+$("paketOnayBtn").onclick = async () => {
+  const ad = $("pkAd").value.trim();
+  const telefon = $("pkTel").value.trim();
+  const mahalle = $("pkMahalle").value.trim();
+  const adres = $("pkAdres").value.trim();
+  const secili = document.querySelector('input[name="odeme"]:checked');
+  const odeme = secili ? secili.value : "";
+  const hata = (m) => { const h = $("pkHata"); h.textContent = m; h.hidden = false; };
+  if (!ad) return hata("Ad soyad gerekli.");
+  if (!telefon || telefon.replace(/\D/g, "").length < 10) return hata("Geçerli bir telefon numarası girin.");
+  if (!adres) return hata("Açık adres gerekli.");
+  if (!odeme) return hata("Ödeme yöntemi seçin.");
+  localStorage.setItem(PK_KEY, JSON.stringify({ ad, telefon, mahalle, adres }));
+  const btn = $("paketOnayBtn"); btn.disabled = true; const em = btn.textContent; btn.textContent = "Gönderiliyor...";
+  try {
+    await siparisGonder({ tip: "paket", musteri: { ad, telefon, mahalle, adres }, odeme });
+    paketFormKapat();
+  } catch (e) {
+    hata(e.message === "gonder" ? "Gönderilemedi, tekrar deneyin." : e.message);
+    btn.textContent = em;
+  } finally { btn.disabled = false; }
 };
 
 // --- İptal talebi (kasadan onay gerekir) ---

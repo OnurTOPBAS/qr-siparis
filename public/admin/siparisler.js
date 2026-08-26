@@ -66,13 +66,25 @@ function fisYazdir(o) {
     if (u.eklenen && u.eklenen.length) alt += `<div class="fs-not">+ ${esc(u.eklenen.map((e) => e.ad).join(", "))}</div>`;
     return `<div class="fs-satir"><span>${esc(bas)}</span><span>${u.fiyat * u.adet} TL</span></div>${alt}`;
   }).join("");
+  const paket = o.tip === "paket" && o.teslimat;
+  const t = o.teslimat || {};
+  const ustBlok = paket
+    ? `<div class="fs-satir"><b>PAKET SERVIS</b><span>#${o.siraNo || 1}</span></div>
+       <div class="fs-orta2">${saat}</div>
+       <div class="fs-cizgi"></div>
+       <div class="fs-not"><b>${esc(t.ad)}</b></div>
+       <div class="fs-not">TEL: ${esc(t.telefon)}</div>
+       <div class="fs-not">${t.mahalle ? esc(t.mahalle) + " - " : ""}${esc(t.adres)}</div>
+       <div class="fs-not fs-toplam">ODEME: ${esc(t.odemeAd || "")}</div>`
+    : `<div class="fs-satir"><b>MASA ${esc(o.masa)}</b><span>${o.siraNo || 1}. Sipariş</span></div>
+       <div class="fs-orta2">${saat}</div>`;
   $("fis").innerHTML = `
     <div class="fs-baslik">SUAT USTA TANTUNI</div>
-    <div class="fs-orta">SIPARIS FISI</div>
+    <div class="fs-orta">${paket ? "PAKET FISI" : "SIPARIS FISI"}</div>
     <div class="fs-cizgi"></div>
-    <div class="fs-satir"><b>MASA ${esc(o.masa)}</b><span>${o.siraNo || 1}. Sipariş</span></div>
-    <div class="fs-orta2">${saat}</div>
-    <div class="fs-cizgi"></div>
+    ${ustBlok}
+    <div class="fs-cizgi"></div>`;
+  $("fis").innerHTML += `
     ${satirlar}
     <div class="fs-cizgi"></div>
     <div class="fs-satir fs-toplam"><span>TOPLAM</span><span>${o.toplam} TL</span></div>
@@ -110,7 +122,8 @@ socket.on("orderRemoved", ({ id }) => {
 function kartEkle(o, yeniMi) {
   $("bos").hidden = true;
   const kart = document.createElement("div");
-  kart.className = "kart" + (yeniMi ? " yeni" : "") + (o.iptalTalebi ? " iptal-bekliyor" : "");
+  const paket = o.tip === "paket" && o.teslimat;
+  kart.className = "kart" + (yeniMi ? " yeni" : "") + (o.iptalTalebi ? " iptal-bekliyor" : "") + (paket ? " paket" : "");
   kart.dataset.id = o.id;
   const saat = new Date(o.tarih).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
   const urunler = o.urunler.map((u) => {
@@ -127,11 +140,22 @@ function kartEkle(o, yeniMi) {
       <button class="iptal-onayla">✓ İptali Onayla</button>
       <button class="iptal-reddet">✗ Reddet</button>
     </div>` : "";
+  const t = o.teslimat || {};
+  const baslik = paket
+    ? `📦 Paket <span class="sira-rozet">#${o.siraNo || 1}</span>`
+    : `Masa ${esc(o.masa)} <span class="sira-rozet">${o.siraNo || 1}. Sipariş</span>`;
+  const teslimatHtml = paket ? `
+    <div class="teslimat">
+      <div class="t-satir"><b>👤 ${esc(t.ad)}</b><a class="t-tel" href="tel:${esc(t.telefon)}">📞 ${esc(t.telefon)}</a></div>
+      <div class="t-adres">📍 ${t.mahalle ? esc(t.mahalle) + " — " : ""}${esc(t.adres)}</div>
+      <div class="t-odeme">💰 ${esc(t.odemeAd || "")}</div>
+    </div>` : "";
   kart.innerHTML = `
     <div class="kart-ust">
-      <span class="masa">Masa ${esc(o.masa)} <span class="sira-rozet">${o.siraNo || 1}. Sipariş</span></span>
+      <span class="masa">${baslik}</span>
       <span class="saat">${saat}</span>
     </div>
+    ${teslimatHtml}
     <ul class="urunler">${urunler}</ul>
     ${notHtml}
     ${iptalHtml}
