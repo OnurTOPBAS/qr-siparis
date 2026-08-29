@@ -467,3 +467,8 @@ body {
 .alt-linkler { display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: center; margin-top: 12px; font-size: .8rem; }
 .alt-linkler a { color: var(--soluk); text-decoration: none; }
 .alt-linkler a:hover { color: var(--turuncu); text-decoration: underline; }
+
+/* Güvenli ödeme logoları (footer) */
+.odeme-logolar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; margin: 14px 0 8px; }
+.odeme-logo { height: 30px; width: auto; border-radius: 4px; }
+.odeme-guvenli { font-size: .78rem; color: var(--soluk); margin-top: 2px; }
