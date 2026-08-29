@@ -451,3 +451,19 @@ body {
 .pk-secim.pasif { opacity: .55; cursor: not-allowed; }
 .pk-secim.pasif small { color: var(--soluk); font-weight: 500; }
 .pk-hata { color: var(--kirmizi); font-size: .85rem; font-weight: 600; margin: 4px 0 8px; }
+
+/* ===== Yasal sayfalar (mesafeli satış, KVKK, teslimat/iade, iletişim) ===== */
+.yasal { max-width: 820px; margin: 0 auto; padding: 24px 20px 60px; color: var(--metin); line-height: 1.65; }
+.yasal-geri { display: inline-block; margin-bottom: 18px; color: var(--turuncu); font-weight: 700; text-decoration: none; }
+.yasal h1 { font-size: 1.5rem; color: var(--komur); margin-bottom: 6px; }
+.yasal .yasal-tarih { color: var(--soluk); font-size: .85rem; margin-bottom: 22px; }
+.yasal h2 { font-size: 1.1rem; color: var(--komur); margin: 26px 0 8px; }
+.yasal p, .yasal li { font-size: .95rem; margin-bottom: 10px; }
+.yasal ul { padding-left: 20px; margin-bottom: 10px; }
+.yasal .bilgi-kutu { background: #fff; border: 1.5px solid #e6d9c8; border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+.yasal .bilgi-kutu div { margin-bottom: 6px; }
+.yasal .doldurulacak { color: var(--kirmizi); font-weight: 700; }
+.yasal a { color: var(--turuncu); }
+.alt-linkler { display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: center; margin-top: 12px; font-size: .8rem; }
+.alt-linkler a { color: var(--soluk); text-decoration: none; }
+.alt-linkler a:hover { color: var(--turuncu); text-decoration: underline; }
