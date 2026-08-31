@@ -6,6 +6,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
+import { createRequire } from "module";
 import { dirname, join, extname } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -52,9 +53,12 @@ if (config.iyzico === undefined) {
 }
 if (config.siteUrl === undefined) { config.siteUrl = "https://tantunici.com.tr"; yaz(CONFIG_PATH, config); }
 // iyzipay'i güvenli yükle: paket kurulu değilse site çökmesin, online ödeme kapalı kalsın
+// (top-level await KULLANMA — eski Node sürümlerinde çöker; createRequire her sürümde çalışır)
 let Iyzipay = null;
-try { Iyzipay = (await import("iyzipay")).default; }
-catch { console.warn("⚠️  iyzipay paketi kurulu değil — online ödeme kapalı (NPM install gerekli)"); }
+try {
+  const require = createRequire(import.meta.url);
+  Iyzipay = require("iyzipay");
+} catch { console.warn("⚠️  iyzipay paketi kurulu değil — online ödeme kapalı (NPM install gerekli)"); }
 const iyzicoAktif = () => !!(Iyzipay && config.iyzico && config.iyzico.apiKey && config.iyzico.secretKey);
 const iyziClient = () => new Iyzipay({ apiKey: config.iyzico.apiKey, secretKey: config.iyzico.secretKey, uri: config.iyzico.baseUrl || "https://sandbox-api.iyzipay.com" });
 // Oturum imza anahtarı: yoksa rastgele üret ve sakla (sabit hardcoded anahtar güvensiz)
