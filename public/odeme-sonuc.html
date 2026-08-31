@@ -28,7 +28,8 @@
     } else if (durum === "basarisiz") {
       ikon.textContent = "❌";
       baslik.textContent = "Ödeme Tamamlanamadı";
-      mesaj.textContent = "Ödeme onaylanmadı veya iptal edildi. Tekrar deneyebilir ya da kapıda ödeme seçebilirsin.";
+      const neden = p.get("neden");
+      mesaj.innerHTML = "Ödeme onaylanmadı veya iptal edildi. Tekrar deneyebilir ya da kapıda ödeme seçebilirsin." + (neden ? "<br><br><small style='color:#999'>Sebep: " + neden + "</small>" : "");
     } else {
       ikon.textContent = "⚠️";
       baslik.textContent = "Bir Sorun Oluştu";

@@ -427,20 +427,30 @@ function paketFormAc() {
     const s = JSON.parse(localStorage.getItem(PK_KEY) || "{}"); // önceki adresi hatırla
     if (s.ad) $("pkAd").value = s.ad;
     if (s.telefon) $("pkTel").value = s.telefon;
+    if (s.email) $("pkEmail").value = s.email;
     if (s.mahalle) $("pkMahalle").value = s.mahalle;
     if (s.adres) $("pkAdres").value = s.adres;
   } catch {}
   $("pkToplam").textContent = [...sepet.values()].reduce((s, e) => s + e.birimFiyat * e.adet, 0);
   $("pkHata").hidden = true;
+  emailAlaniGuncelle();
   $("paketPanel").hidden = false;
   document.body.style.overflow = "hidden";
 }
+// Online ödeme seçilince e-posta alanını göster (iyzico gerçek e-posta ister)
+function emailAlaniGuncelle() {
+  const secili = document.querySelector('input[name="odeme"]:checked');
+  const online = secili && secili.value === "online";
+  $("pkEmailAlan").hidden = !online;
+}
+document.querySelectorAll('input[name="odeme"]').forEach((r) => r.addEventListener("change", emailAlaniGuncelle));
 function paketFormKapat() { $("paketPanel").hidden = true; document.body.style.overflow = ""; }
 $("paketKapat").onclick = paketFormKapat;
 
 $("paketOnayBtn").onclick = async () => {
   const ad = $("pkAd").value.trim();
   const telefon = $("pkTel").value.trim();
+  const email = $("pkEmail").value.trim();
   const mahalle = $("pkMahalle").value.trim();
   const adres = $("pkAdres").value.trim();
   const secili = document.querySelector('input[name="odeme"]:checked');
@@ -450,12 +460,13 @@ $("paketOnayBtn").onclick = async () => {
   if (!telefon || telefon.replace(/\D/g, "").length < 10) return hata("Geçerli bir telefon numarası girin.");
   if (!adres) return hata("Açık adres gerekli.");
   if (!odeme) return hata("Ödeme yöntemi seçin.");
-  localStorage.setItem(PK_KEY, JSON.stringify({ ad, telefon, mahalle, adres }));
+  if (odeme === "online" && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return hata("Online ödeme için geçerli bir e-posta girin.");
+  localStorage.setItem(PK_KEY, JSON.stringify({ ad, telefon, email, mahalle, adres }));
   const btn = $("paketOnayBtn"); btn.disabled = true; const em = btn.textContent;
   btn.textContent = odeme === "online" ? "Ödeme açılıyor..." : "Gönderiliyor...";
   try {
     if (odeme === "online") {
-      await onlineOdemeBaslat({ ad, telefon, mahalle, adres }); // iyzico ödeme formunu açar
+      await onlineOdemeBaslat({ ad, telefon, email, mahalle, adres }); // iyzico ödeme formunu açar
     } else {
       await siparisGonder({ tip: "paket", musteri: { ad, telefon, mahalle, adres }, odeme });
       paketFormKapat();

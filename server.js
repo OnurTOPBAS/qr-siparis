@@ -285,7 +285,9 @@ app.post("/api/payment/baslat", (req, res) => {
   const telefon = String(musteri?.telefon || "").trim().slice(0, 20);
   const mahalle = String(musteri?.mahalle || "").trim().slice(0, 80);
   const adres = String(musteri?.adres || "").trim().slice(0, 300);
+  const email = String(musteri?.email || "").trim().slice(0, 100);
   if (!ad || !telefon || !adres) return res.status(400).json({ error: "Ad, telefon ve açık adres zorunlu" });
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return res.status(400).json({ error: "Online ödeme için geçerli bir e-posta gerekli" });
   const items = kalemleriDuzenle(urunler);
   if (!items.length) return res.status(400).json({ error: "Geçerli ürün bulunamadı" });
   const toplam = items.reduce((s, i) => s + i.fiyat * i.adet, 0);
@@ -303,7 +305,7 @@ app.post("/api/payment/baslat", (req, res) => {
     toplam,
     durum: "odeme-bekliyor", // ödeme onaylanana kadar mutfağa/rapora düşmez
     tarih: new Date().toISOString(),
-    teslimat: { ad, telefon, mahalle, adres, odeme: "online", odemeAd: "Online Ödeme", odemeDurumu: "Bekliyor" },
+    teslimat: { ad, telefon, mahalle, adres, email, odeme: "online", odemeAd: "Online Ödeme", odemeDurumu: "Bekliyor" },
   };
   orders.push(order);
   kaydetOrders();
@@ -333,7 +335,7 @@ app.post("/api/payment/baslat", (req, res) => {
     enabledInstallments: [1],
     buyer: {
       id: "M" + order.id, name: isim, surname: soyisim,
-      gsmNumber: gsmDuzelt(telefon), email: "musteri@tantunici.com.tr",
+      gsmNumber: gsmDuzelt(telefon), email: email,
       identityNumber: "11111111111", // TC toplanmıyor; iyzico için varsayılan
       registrationAddress: acikAdres, ip, city: mahalle || "Istanbul", country: "Turkey",
     },
@@ -361,8 +363,10 @@ app.post("/api/payment/callback", (req, res) => {
   iyziClient().checkoutForm.retrieve({ locale: "tr", token }, (err, result) => {
     const order = orders.find((o) => o.iyziToken === token);
     if (err || !result || result.status !== "success" || result.paymentStatus !== "SUCCESS") {
+      const neden = (result && (result.errorMessage || result.mdStatus || result.paymentStatus)) || (err && err.message) || "bilinmiyor";
+      console.error("iyzico ödeme BAŞARISIZ:", neden, "| errorCode:", result && result.errorCode, "| paymentStatus:", result && result.paymentStatus);
       if (order && order.durum === "odeme-bekliyor") { order.durum = "iptal"; kaydetOrders(); }
-      return res.redirect("/odeme-sonuc?durum=basarisiz");
+      return res.redirect("/odeme-sonuc?durum=basarisiz&neden=" + encodeURIComponent(String(neden).slice(0, 150)));
     }
     if (order && order.durum === "odeme-bekliyor") {
       order.durum = "yeni";
@@ -401,6 +405,37 @@ app.get("/admin/masalar", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, 
 app.get("/admin/rapor", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "rapor.html")));
 app.get("/admin/gecmis", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "gecmis.html")));
 app.get("/admin/kampanya", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "kampanya.html")));
+app.get("/admin/ayarlar", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "ayarlar.html")));
+
+// Ayarları getir (güvenlik anahtarını göstermeden — sadece var/yok)
+app.get("/api/admin/ayarlar", girisGerekli, (_req, res) => {
+  const iyz = config.iyzico || {};
+  res.json({
+    siteAdi: config.siteAdi || "",
+    googleYorumUrl: config.googleYorumUrl || "",
+    iyzicoApiKey: iyz.apiKey || "",
+    iyzicoSecretVar: !!iyz.secretKey,
+    iyzicoOrtam: String(iyz.baseUrl || "").includes("sandbox") ? "sandbox" : "production",
+    iyzicoAktif: iyzicoAktif(),
+    siteUrl: config.siteUrl || "https://tantunici.com.tr",
+  });
+});
+
+// Ayarları kaydet (JSON'a elle dokunmadan) — anında geçerli, restart gerekmez
+app.post("/api/admin/ayarlar", girisGerekli, (req, res) => {
+  const b = req.body || {};
+  if (typeof b.siteAdi === "string" && b.siteAdi.trim()) config.siteAdi = b.siteAdi.trim().slice(0, 100);
+  if (typeof b.googleYorumUrl === "string") config.googleYorumUrl = b.googleYorumUrl.trim().slice(0, 1500);
+  if (!config.iyzico) config.iyzico = { apiKey: "", secretKey: "", baseUrl: "https://api.iyzipay.com" };
+  if (typeof b.iyzicoApiKey === "string") config.iyzico.apiKey = b.iyzicoApiKey.trim();
+  // Güvenlik anahtarı: sadece yeni bir değer girildiyse güncelle (boş bırakılırsa eskisi kalır)
+  if (typeof b.iyzicoSecret === "string" && b.iyzicoSecret.trim()) config.iyzico.secretKey = b.iyzicoSecret.trim();
+  if (b.iyzicoOrtam === "sandbox") config.iyzico.baseUrl = "https://sandbox-api.iyzipay.com";
+  else if (b.iyzicoOrtam === "production") config.iyzico.baseUrl = "https://api.iyzipay.com";
+  if (typeof b.yeniSifre === "string" && b.yeniSifre.trim().length >= 4) config.adminSifre = b.yeniSifre.trim();
+  yaz(CONFIG_PATH, config);
+  res.json({ ok: true, iyzicoAktif: iyzicoAktif() });
+});
 
 // --- Menü yönetimi ---
 app.get("/api/admin/menu", girisGerekli, (_req, res) => res.json(oku(MENU_PATH, { urunler: [] })));
