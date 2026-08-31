@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=6" />
+  <link rel="stylesheet" href="style.css?v=7" />
 </head>
 <body>
   <!-- Kapak (hero) -->
@@ -138,9 +138,20 @@
     </div>
   </div>
 
+  <!-- iyzico online ödeme ekranı -->
+  <div id="iyziOverlay" class="iyzi-overlay" hidden>
+    <div class="iyzi-box">
+      <div class="iyzi-ust">
+        <span>🔒 Güvenli Ödeme</span>
+        <button id="iyziKapat" class="kapat" aria-label="Kapat">✕</button>
+      </div>
+      <div id="iyzipay-checkout-form" class="responsive"></div>
+    </div>
+  </div>
+
   <!-- Toast bildirimi -->
   <div id="toast" class="toast" hidden></div>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>

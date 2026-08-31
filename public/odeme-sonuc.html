@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ödeme Sonucu — Suat Usta Mersin Tantuni</title>
+  <link rel="stylesheet" href="/style.css?v=6" />
+</head>
+<body>
+  <div class="yasal" style="text-align:center; max-width:520px;">
+    <div id="ikon" style="font-size:4rem; margin:30px 0 10px;">⏳</div>
+    <h1 id="baslik" style="text-align:center;">İşleniyor...</h1>
+    <p id="mesaj"></p>
+    <a href="/" class="siparis-btn" style="display:inline-block; width:auto; padding:14px 28px; margin-top:20px; text-decoration:none;">← Menüye Dön</a>
+  </div>
+  <script>
+    const p = new URLSearchParams(location.search);
+    const durum = p.get("durum");
+    const no = p.get("no");
+    const ikon = document.getElementById("ikon");
+    const baslik = document.getElementById("baslik");
+    const mesaj = document.getElementById("mesaj");
+    if (durum === "basarili") {
+      ikon.textContent = "✅";
+      baslik.textContent = "Ödemen Alındı!";
+      mesaj.innerHTML = "Siparişin başarıyla alındı ve hazırlanmaya başlıyor." + (no ? "<br><strong>Sipariş No: " + no + "</strong>" : "") + "<br>Afiyet olsun 🧡";
+      try { ["paketAdres"].forEach(() => {}); Object.keys(localStorage).filter(k => k.startsWith("aktifSiparis_")).forEach(k => localStorage.removeItem(k)); } catch {}
+    } else if (durum === "basarisiz") {
+      ikon.textContent = "❌";
+      baslik.textContent = "Ödeme Tamamlanamadı";
+      mesaj.textContent = "Ödeme onaylanmadı veya iptal edildi. Tekrar deneyebilir ya da kapıda ödeme seçebilirsin.";
+    } else {
+      ikon.textContent = "⚠️";
+      baslik.textContent = "Bir Sorun Oluştu";
+      mesaj.textContent = "Ödeme durumu doğrulanamadı. Lütfen bizimle iletişime geç: 0212 322 20 25";
+    }
+  </script>
+</body>
+</html>

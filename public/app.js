@@ -252,12 +252,25 @@ $("bagisEvet").onclick = () => {
 $("bagisHayir").onclick = () => ($("bagisPopup").hidden = true);
 
 // --- Google yorum daveti (link tanımlıysa göster) ---
+let iyzicoAktif = false;
 fetch("/api/ayarlar")
   .then((r) => r.json())
   .then((a) => {
     if (a.googleYorumUrl) {
       $("yorumLink").href = a.googleYorumUrl;
       $("yorumKutu").hidden = false;
+    }
+    // Online ödeme (iyzico) aktifse "yakında" seçeneğini kullanılabilir yap
+    iyzicoAktif = !!a.iyzicoAktif;
+    if (iyzicoAktif) {
+      const secim = document.querySelector('.pk-secim.pasif');
+      if (secim) {
+        secim.classList.remove("pasif");
+        const rb = secim.querySelector('input[value="online"]');
+        if (rb) rb.disabled = false;
+        const small = secim.querySelector("small");
+        if (small) small.remove();
+      }
     }
   })
   .catch(() => {});
@@ -438,14 +451,45 @@ $("paketOnayBtn").onclick = async () => {
   if (!adres) return hata("Açık adres gerekli.");
   if (!odeme) return hata("Ödeme yöntemi seçin.");
   localStorage.setItem(PK_KEY, JSON.stringify({ ad, telefon, mahalle, adres }));
-  const btn = $("paketOnayBtn"); btn.disabled = true; const em = btn.textContent; btn.textContent = "Gönderiliyor...";
+  const btn = $("paketOnayBtn"); btn.disabled = true; const em = btn.textContent;
+  btn.textContent = odeme === "online" ? "Ödeme açılıyor..." : "Gönderiliyor...";
   try {
-    await siparisGonder({ tip: "paket", musteri: { ad, telefon, mahalle, adres }, odeme });
-    paketFormKapat();
+    if (odeme === "online") {
+      await onlineOdemeBaslat({ ad, telefon, mahalle, adres }); // iyzico ödeme formunu açar
+    } else {
+      await siparisGonder({ tip: "paket", musteri: { ad, telefon, mahalle, adres }, odeme });
+      paketFormKapat();
+    }
   } catch (e) {
     hata(e.message === "gonder" ? "Gönderilemedi, tekrar deneyin." : e.message);
     btn.textContent = em;
   } finally { btn.disabled = false; }
+};
+
+// --- Online ödeme (iyzico ödeme formu) ---
+async function onlineOdemeBaslat(musteri) {
+  const r = await fetch("/api/payment/baslat", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ urunler: sepetPayload(), not: $("not").value.trim(), musteri }),
+  });
+  if (!r.ok) { const d = await r.json().catch(() => ({})); throw new Error(d.error || "Ödeme başlatılamadı"); }
+  const d = await r.json();
+  iyzicoFormGoster(d.checkoutFormContent);
+}
+
+function iyzicoFormGoster(html) {
+  paketFormKapat();
+  $("iyziOverlay").hidden = false;
+  document.body.style.overflow = "hidden";
+  document.getElementById("iyzipay-checkout-form").innerHTML = "";
+  // iyzico script'i (innerHTML script çalıştırmaz; createContextualFragment çalıştırır)
+  const frag = document.createRange().createContextualFragment(html);
+  document.body.appendChild(frag);
+}
+$("iyziKapat").onclick = () => {
+  $("iyziOverlay").hidden = true;
+  document.body.style.overflow = "";
+  document.getElementById("iyzipay-checkout-form").innerHTML = "";
 };
 
 // --- İptal talebi (kasadan onay gerekir) ---

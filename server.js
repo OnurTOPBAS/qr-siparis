@@ -2,6 +2,7 @@ import express from "express";
 import session from "express-session";
 import multer from "multer";
 import QRCode from "qrcode";
+import Iyzipay from "iyzipay";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { readFileSync, writeFileSync, existsSync } from "fs";
@@ -45,6 +46,14 @@ if (!config) {
   yaz(CONFIG_PATH, config);
 }
 if (config.googleYorumUrl === undefined) { config.googleYorumUrl = ""; yaz(CONFIG_PATH, config); }
+// iyzico online ödeme ayarları (anahtarlar boşsa online ödeme kapalı kalır)
+if (config.iyzico === undefined) {
+  config.iyzico = { apiKey: "", secretKey: "", baseUrl: "https://sandbox-api.iyzipay.com" };
+  yaz(CONFIG_PATH, config);
+}
+if (config.siteUrl === undefined) { config.siteUrl = "https://tantunici.com.tr"; yaz(CONFIG_PATH, config); }
+const iyzicoAktif = () => !!(config.iyzico && config.iyzico.apiKey && config.iyzico.secretKey);
+const iyziClient = () => new Iyzipay({ apiKey: config.iyzico.apiKey, secretKey: config.iyzico.secretKey, uri: config.iyzico.baseUrl || "https://sandbox-api.iyzipay.com" });
 // Oturum imza anahtarı: yoksa rastgele üret ve sakla (sabit hardcoded anahtar güvensiz)
 if (!config.sessionSecret) { config.sessionSecret = crypto.randomUUID() + crypto.randomUUID(); yaz(CONFIG_PATH, config); }
 
@@ -63,6 +72,7 @@ const kaydetTables = () => yaz(TABLES_PATH, tables);
 
 // --- Middleware ---
 app.use(express.json());
+app.use(express.urlencoded({ extended: false })); // iyzico callback form-encoded gönderir
 app.use(
   session({
     secret: config.sessionSecret,
@@ -99,7 +109,7 @@ app.get("/", (_req, res) => res.sendFile(join(__dirname, "public", "index.html")
 app.get("/api/menu", (_req, res) => res.json(oku(MENU_PATH, { urunler: [] })));
 
 // Müşteri tarafı ayarlar (şifre vb. sızdırmadan)
-app.get("/api/ayarlar", (_req, res) => res.json({ siteAdi: config.siteAdi || "", googleYorumUrl: config.googleYorumUrl || "" }));
+app.get("/api/ayarlar", (_req, res) => res.json({ siteAdi: config.siteAdi || "", googleYorumUrl: config.googleYorumUrl || "", iyzicoAktif: iyzicoAktif() }));
 
 // Bağış: menüde olmayan özel kalem, fiyatı sunucuda sabit
 const BAGIS_ID = 9999;
@@ -250,6 +260,117 @@ app.post("/api/order/:id/iptal-talep", (req, res) => {
 // Doğrudan silme müşteriye kapalı
 app.delete("/api/order/:id", (_req, res) => res.status(403).json({ error: "İptal için kasadan onay gerekir" }));
 
+// ============ ONLINE ÖDEME (iyzico) ============
+function gsmDuzelt(tel) {
+  let d = String(tel || "").replace(/\D/g, "");
+  if (d.startsWith("90")) d = d.slice(2);
+  if (d.startsWith("0")) d = d.slice(1);
+  return d ? "+90" + d : "+905000000000";
+}
+const paraFmt = (n) => (Math.round(n * 100) / 100).toFixed(2);
+
+// 1) Ödeme başlat: "ödeme bekliyor" siparişi oluştur + iyzico ödeme formunu döndür
+app.post("/api/payment/baslat", (req, res) => {
+  if (!iyzicoAktif()) return res.status(400).json({ error: "Online ödeme şu an kullanılamıyor" });
+  const { urunler, not, musteri } = req.body || {};
+  if (!Array.isArray(urunler) || urunler.length === 0) return res.status(400).json({ error: "En az bir ürün gerekli" });
+  const ad = String(musteri?.ad || "").trim().slice(0, 60);
+  const telefon = String(musteri?.telefon || "").trim().slice(0, 20);
+  const mahalle = String(musteri?.mahalle || "").trim().slice(0, 80);
+  const adres = String(musteri?.adres || "").trim().slice(0, 300);
+  if (!ad || !telefon || !adres) return res.status(400).json({ error: "Ad, telefon ve açık adres zorunlu" });
+  const items = kalemleriDuzenle(urunler);
+  if (!items.length) return res.status(400).json({ error: "Geçerli ürün bulunamadı" });
+  const toplam = items.reduce((s, i) => s + i.fiyat * i.adet, 0);
+
+  const bugunBasi = new Date(); bugunBasi.setHours(0, 0, 0, 0);
+  const bugunAdet = orders.filter((x) => x.tip === "paket" && new Date(x.tarih) >= bugunBasi).length;
+  const order = {
+    id: nextId++,
+    token: crypto.randomUUID(),
+    masa: "📦 Paket",
+    tip: "paket",
+    siraNo: bugunAdet + 1,
+    urunler: items,
+    not: String(not || "").slice(0, 300),
+    toplam,
+    durum: "odeme-bekliyor", // ödeme onaylanana kadar mutfağa/rapora düşmez
+    tarih: new Date().toISOString(),
+    teslimat: { ad, telefon, mahalle, adres, odeme: "online", odemeAd: "Online Ödeme", odemeDurumu: "Bekliyor" },
+  };
+  orders.push(order);
+  kaydetOrders();
+
+  const parcalar = ad.split(" ");
+  const isim = parcalar[0] || ad;
+  const soyisim = parcalar.slice(1).join(" ") || ".";
+  const ip = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "85.34.78.112").split(",")[0].trim();
+  const acikAdres = (mahalle ? mahalle + " " : "") + adres;
+  // iyzico: basketItems fiyat toplamı = price olmalı
+  const basketItems = items.map((u, i) => ({
+    id: "U" + (u.id ?? i),
+    name: (u.ad + (u.porsiyon ? " " + u.porsiyon : "")).slice(0, 100),
+    category1: "Yiyecek",
+    itemType: "PHYSICAL",
+    price: paraFmt(u.fiyat * u.adet),
+  }));
+  const request = {
+    locale: "tr",
+    conversationId: String(order.id),
+    price: paraFmt(toplam),
+    paidPrice: paraFmt(toplam),
+    currency: "TRY",
+    basketId: "SP" + order.id,
+    paymentGroup: "PRODUCT",
+    callbackUrl: (config.siteUrl || "https://tantunici.com.tr") + "/api/payment/callback",
+    enabledInstallments: [1],
+    buyer: {
+      id: "M" + order.id, name: isim, surname: soyisim,
+      gsmNumber: gsmDuzelt(telefon), email: "musteri@tantunici.com.tr",
+      identityNumber: "11111111111", // TC toplanmıyor; iyzico için varsayılan
+      registrationAddress: acikAdres, ip, city: mahalle || "Istanbul", country: "Turkey",
+    },
+    shippingAddress: { contactName: ad, city: mahalle || "Istanbul", country: "Turkey", address: acikAdres },
+    billingAddress: { contactName: ad, city: mahalle || "Istanbul", country: "Turkey", address: acikAdres },
+    basketItems,
+  };
+  iyziClient().checkoutFormInitialize.create(request, (err, result) => {
+    if (err || !result || result.status !== "success") {
+      order.durum = "iptal";
+      kaydetOrders();
+      console.error("iyzico init hata:", err || result?.errorMessage);
+      return res.status(502).json({ error: (result && result.errorMessage) || "Ödeme başlatılamadı" });
+    }
+    order.iyziToken = result.token;
+    kaydetOrders();
+    res.json({ ok: true, checkoutFormContent: result.checkoutFormContent, token: result.token, siparisId: order.id });
+  });
+});
+
+// 2) iyzico ödeme sonucu (iyzico sunucusu buraya POST eder)
+app.post("/api/payment/callback", (req, res) => {
+  const token = req.body?.token;
+  if (!token || !iyzicoAktif()) return res.redirect("/odeme-sonuc?durum=hata");
+  iyziClient().checkoutForm.retrieve({ locale: "tr", token }, (err, result) => {
+    const order = orders.find((o) => o.iyziToken === token);
+    if (err || !result || result.status !== "success" || result.paymentStatus !== "SUCCESS") {
+      if (order && order.durum === "odeme-bekliyor") { order.durum = "iptal"; kaydetOrders(); }
+      return res.redirect("/odeme-sonuc?durum=basarisiz");
+    }
+    if (order && order.durum === "odeme-bekliyor") {
+      order.durum = "yeni";
+      order.teslimat.odemeDurumu = "ÖDENDİ (Online)";
+      order.odemeId = result.paymentId;
+      kaydetOrders();
+      io.emit("newOrder", gizle(order)); // ödeme onaylandı → mutfağa düş
+    }
+    res.redirect("/odeme-sonuc?durum=basarili&no=" + (order ? order.siraNo : ""));
+  });
+});
+
+// 3) Ödeme sonuç sayfası
+app.get("/odeme-sonuc", (_req, res) => res.sendFile(join(__dirname, "public", "odeme-sonuc.html")));
+
 // ============ ADMIN GİRİŞ ============
 app.get("/admin/login", (req, res) => {
   if (req.session?.giris) return res.redirect("/panel");
@@ -398,7 +519,7 @@ app.get("/api/report", girisGerekli, (_req, res) => {
   const ayBasi = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const ozet = (baslangic) => {
-    const filt = orders.filter((o) => new Date(o.tarih) >= baslangic);
+    const filt = orders.filter((o) => new Date(o.tarih) >= baslangic && o.durum !== "odeme-bekliyor");
     const map = new Map();
     let ciro = 0;
     for (const o of filt) {
@@ -421,7 +542,7 @@ app.get("/api/admin/gecmis", girisGerekli, (_req, res) => {
   const now = new Date();
   const gunBasi = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const bugun = orders
-    .filter((o) => new Date(o.tarih) >= gunBasi)
+    .filter((o) => new Date(o.tarih) >= gunBasi && o.durum !== "odeme-bekliyor")
     .map(gizle)
     .sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
   res.json({ siparisler: bugun, adet: bugun.length, ciro: bugun.reduce((s, o) => s + o.toplam, 0) });
@@ -429,7 +550,7 @@ app.get("/api/admin/gecmis", girisGerekli, (_req, res) => {
 
 // ============ SOCKET.IO ============
 io.on("connection", (socket) => {
-  socket.emit("initOrders", orders.filter((o) => o.durum !== "hazir").map(gizle));
+  socket.emit("initOrders", orders.filter((o) => o.durum !== "hazir" && o.durum !== "odeme-bekliyor").map(gizle));
   socket.on("markDone", (id) => {
     const o = orders.find((x) => x.id === id);
     if (o) {

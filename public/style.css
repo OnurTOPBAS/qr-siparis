@@ -472,3 +472,10 @@ body {
 .odeme-logolar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; margin: 14px 0 8px; }
 .odeme-logo { height: 30px; width: auto; border-radius: 4px; }
 .odeme-guvenli { font-size: .78rem; color: var(--soluk); margin-top: 2px; }
+
+/* iyzico online ödeme ekranı */
+.iyzi-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.55); display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 16px; }
+.iyzi-box { background: #fff; border-radius: 16px; width: 100%; max-width: 480px; margin: 24px 0; box-shadow: 0 20px 60px rgba(0,0,0,.4); overflow: hidden; }
+.iyzi-ust { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--komur); color: #fff; font-weight: 700; }
+.iyzi-ust .kapat { background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; }
+#iyzipay-checkout-form { padding: 10px 14px 20px; min-height: 200px; }
