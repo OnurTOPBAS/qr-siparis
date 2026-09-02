@@ -10,6 +10,9 @@ const socket = io({
 });
 const $ = (id) => document.getElementById(id);
 const siparislerEl = $("siparisler");
+const siparisVerileri = new Map(); // id -> sipariş (düzenleme için)
+let adminMenu = [];
+fetch("/api/menu").then((r) => r.json()).then((d) => { adminMenu = d.urunler || []; }).catch(() => {});
 
 let sesAcik = false;
 const zilSesi = new Audio("/sounds/zil.mp3");
@@ -121,6 +124,7 @@ socket.on("orderRemoved", ({ id }) => {
 
 function kartEkle(o, yeniMi) {
   $("bos").hidden = true;
+  siparisVerileri.set(o.id, o);
   const kart = document.createElement("div");
   const paket = o.tip === "paket" && o.teslimat;
   kart.className = "kart" + (yeniMi ? " yeni" : "") + (o.iptalTalebi ? " iptal-bekliyor" : "") + (paket ? " paket" : "");
@@ -161,11 +165,13 @@ function kartEkle(o, yeniMi) {
     ${iptalHtml}
     <div class="kart-alt">
       <span class="toplam">${o.toplam} ₺</span>
+      <button class="duzenle-btn" title="Siparişi düzenle">✏️ Düzenle</button>
       <button class="yazdir-btn" title="Fiş yazdır">🖨️</button>
       <button class="hazir-btn">✓ Hazır / Teslim</button>
     </div>`;
   kart.querySelector(".hazir-btn").onclick = () => socket.emit("markDone", o.id);
   kart.querySelector(".yazdir-btn").onclick = () => fisYazdir(o);
+  kart.querySelector(".duzenle-btn").onclick = () => duzenleAc(o.id);
   if (o.iptalTalebi) {
     kart.querySelector(".iptal-onayla").onclick = async () => {
       if (confirm(`Masa ${o.masa} siparişi iptal edilsin mi?`)) await fetch("/api/admin/order/" + o.id + "/iptal-onayla", { method: "POST" });
@@ -186,4 +192,68 @@ function guncelleSayac() {
 
 function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+// --- Admin sipariş düzenleme (kasadan ekleme/çıkarma) ---
+function duzenleAc(id) {
+  const o = siparisVerileri.get(id);
+  const kart = document.querySelector(`.kart[data-id="${id}"]`);
+  if (!o || !kart || kart.querySelector(".duzenle-alan")) return;
+  const kalemler = o.urunler.map((u) => ({
+    id: u.id, ad: u.ad, adet: u.adet, porsiyon: u.porsiyon || null,
+    cikarilan: [...(u.cikarilan || [])], eklenen: (u.eklenen || []).map((e) => ({ ad: e.ad })), sadece: u.sadece || null,
+  }));
+  const div = document.createElement("div");
+  div.className = "duzenle-alan";
+  kart.appendChild(div);
+  cizDuzenle(div, id, kalemler);
+}
+
+function cizDuzenle(div, id, kalemler) {
+  const satirlar = kalemler.map((u, i) => {
+    const ops = [u.porsiyon, u.sadece, (u.cikarilan.length ? "-" + u.cikarilan.join(",") : ""), (u.eklenen.length ? "+" + u.eklenen.map((e) => e.ad).join(",") : "")].filter(Boolean).join(" · ");
+    return `<div class="d-satir">
+      <span class="d-ad">${esc(u.ad)}${ops ? ` <small>${esc(ops)}</small>` : ""}</span>
+      <span class="d-qty"><button class="d-eksi" data-i="${i}">−</button><b>${u.adet}</b><button class="d-arti" data-i="${i}">+</button></span>
+      <button class="d-sil" data-i="${i}" title="Kaldır">✕</button>
+    </div>`;
+  }).join("");
+  const menuOpts = adminMenu.map((m) => {
+    const f = (m.porsiyonlar && m.porsiyonlar.length) ? m.porsiyonlar[0].fiyat : m.fiyat;
+    return `<option value="${m.id}">${esc(m.ad)} (${f}₺)</option>`;
+  }).join("");
+  div.innerHTML = `
+    <div class="d-liste">${satirlar || '<div class="d-bos">Ürün yok — en az bir ürün ekleyin</div>'}</div>
+    <div class="d-ekle">
+      <select class="d-menu"><option value="">+ Ürün ekle…</option>${menuOpts}</select>
+      <button class="d-ekle-btn">Ekle</button>
+    </div>
+    <div class="d-butonlar">
+      <button class="d-vazgec">Vazgeç</button>
+      <button class="d-kaydet">✓ Kaydet</button>
+    </div>`;
+  div.querySelectorAll(".d-arti").forEach((b) => (b.onclick = () => { const i = +b.dataset.i; kalemler[i].adet = Math.min(50, kalemler[i].adet + 1); cizDuzenle(div, id, kalemler); }));
+  div.querySelectorAll(".d-eksi").forEach((b) => (b.onclick = () => { const i = +b.dataset.i; kalemler[i].adet = Math.max(1, kalemler[i].adet - 1); cizDuzenle(div, id, kalemler); }));
+  div.querySelectorAll(".d-sil").forEach((b) => (b.onclick = () => { kalemler.splice(+b.dataset.i, 1); cizDuzenle(div, id, kalemler); }));
+  div.querySelector(".d-ekle-btn").onclick = () => {
+    const mid = Number(div.querySelector(".d-menu").value);
+    const m = adminMenu.find((x) => x.id === mid);
+    if (!m) return;
+    const porsiyon = (m.porsiyonlar && m.porsiyonlar.length) ? m.porsiyonlar[0].ad : null;
+    kalemler.push({ id: m.id, ad: m.ad, adet: 1, porsiyon, cikarilan: [], eklenen: [], sadece: null });
+    cizDuzenle(div, id, kalemler);
+  };
+  div.querySelector(".d-vazgec").onclick = () => div.remove();
+  div.querySelector(".d-kaydet").onclick = async () => {
+    if (!kalemler.length) { alert("En az bir ürün olmalı."); return; }
+    const btn = div.querySelector(".d-kaydet"); btn.disabled = true; btn.textContent = "Kaydediliyor…";
+    try {
+      const r = await fetch("/api/admin/order/" + id, {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ urunler: kalemler.map((u) => ({ id: u.id, adet: u.adet, porsiyon: u.porsiyon, cikarilan: u.cikarilan, eklenen: u.eklenen, sadece: u.sadece })) }),
+      });
+      if (!r.ok) throw new Error();
+      div.remove(); // orderChanged kartı yeniden çizecek (güncel tutarla)
+    } catch { btn.disabled = false; btn.textContent = "✓ Kaydet"; alert("Kaydedilemedi, tekrar deneyin."); }
+  };
 }

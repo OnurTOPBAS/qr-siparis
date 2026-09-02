@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=7" />
+  <link rel="stylesheet" href="style.css?v=9" />
 </head>
 <body>
   <!-- Kapak (hero) -->
@@ -131,6 +131,10 @@
           <label class="pk-secim"><input type="radio" name="odeme" value="kart" /><span>💳 Kapıda Kredi Kartı</span></label>
           <label class="pk-secim"><input type="radio" name="odeme" value="yemekkart" /><span>🍽️ Yemek Kartı (Kapıda)</span></label>
           <label class="pk-secim pasif"><input type="radio" name="odeme" value="online" disabled /><span>🌐 Online Ödeme <small>(yakında)</small></span></label>
+          <label class="pk-alan" id="pkYemekKartAlan" hidden style="margin-top:10px">
+            <span>Hangi yemek kartı? *</span>
+            <select id="pkYemekKart"></select>
+          </label>
         </div>
       </div>
       <div class="pk-hata" id="pkHata" hidden></div>
@@ -153,6 +157,6 @@
   <!-- Toast bildirimi -->
   <div id="toast" class="toast" hidden></div>
 
-  <script src="app.js?v=8"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

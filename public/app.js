@@ -253,12 +253,18 @@ $("bagisHayir").onclick = () => ($("bagisPopup").hidden = true);
 
 // --- Google yorum daveti (link tanımlıysa göster) ---
 let iyzicoAktif = false;
+let minPaketTutar = 0;
 fetch("/api/ayarlar")
   .then((r) => r.json())
   .then((a) => {
     if (a.googleYorumUrl) {
       $("yorumLink").href = a.googleYorumUrl;
       $("yorumKutu").hidden = false;
+    }
+    minPaketTutar = Number(a.minPaketTutar) || 0;
+    // Yemek kartı markalarını doldur
+    if (Array.isArray(a.yemekKartlari) && $("pkYemekKart")) {
+      $("pkYemekKart").innerHTML = '<option value="">Seçiniz…</option>' + a.yemekKartlari.map((k) => `<option value="${k}">${k}</option>`).join("");
     }
     // Online ödeme (iyzico) aktifse "yakında" seçeneğini kullanılabilir yap
     iyzicoAktif = !!a.iyzicoAktif;
@@ -413,8 +419,16 @@ $("siparisVerBtn").onclick = async () => {
     try { await kaydet(true); } catch { alert("İşlem başarısız, lütfen tekrar deneyin."); btn.textContent = em; } finally { btn.disabled = false; }
     return;
   }
-  // Paket modunda: önce adres + ödeme formunu aç
-  if (paketMi) { paketFormAc(); return; }
+  // Paket modunda: minimum tutar kontrolü, sonra adres + ödeme formunu aç
+  if (paketMi) {
+    const { tutar } = toplamlar();
+    if (tutar < minPaketTutar) {
+      gosterToast("Online sipariş için minimum sepet tutarı " + minPaketTutar + " ₺ (sepetin: " + tutar + " ₺)");
+      return;
+    }
+    paketFormAc();
+    return;
+  }
   // Masa modunda: doğrudan gönder
   const btn = $("siparisVerBtn"); btn.disabled = true; const em = btn.textContent; btn.textContent = "Gönderiliyor...";
   try { await siparisGonder({}); } catch { alert("İşlem başarısız, lütfen tekrar deneyin."); btn.textContent = em; } finally { btn.disabled = false; }
@@ -437,11 +451,12 @@ function paketFormAc() {
   $("paketPanel").hidden = false;
   document.body.style.overflow = "hidden";
 }
-// Online ödeme seçilince e-posta alanını göster (iyzico gerçek e-posta ister)
+// Ödeme yöntemine göre ek alanları göster: online→e-posta, yemek kartı→marka seçimi
 function emailAlaniGuncelle() {
   const secili = document.querySelector('input[name="odeme"]:checked');
-  const online = secili && secili.value === "online";
-  $("pkEmailAlan").hidden = !online;
+  const v = secili ? secili.value : "";
+  $("pkEmailAlan").hidden = v !== "online";
+  if ($("pkYemekKartAlan")) $("pkYemekKartAlan").hidden = v !== "yemekkart";
 }
 document.querySelectorAll('input[name="odeme"]').forEach((r) => r.addEventListener("change", emailAlaniGuncelle));
 function paketFormKapat() { $("paketPanel").hidden = true; document.body.style.overflow = ""; }
@@ -461,6 +476,11 @@ $("paketOnayBtn").onclick = async () => {
   if (!adres) return hata("Açık adres gerekli.");
   if (!odeme) return hata("Ödeme yöntemi seçin.");
   if (odeme === "online" && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return hata("Online ödeme için geçerli bir e-posta girin.");
+  let yemekKarti = "";
+  if (odeme === "yemekkart") {
+    yemekKarti = $("pkYemekKart") ? $("pkYemekKart").value : "";
+    if (!yemekKarti) return hata("Hangi yemek kartı ile ödeyeceğini seç.");
+  }
   localStorage.setItem(PK_KEY, JSON.stringify({ ad, telefon, email, mahalle, adres }));
   const btn = $("paketOnayBtn"); btn.disabled = true; const em = btn.textContent;
   btn.textContent = odeme === "online" ? "Ödeme açılıyor..." : "Gönderiliyor...";
@@ -468,7 +488,7 @@ $("paketOnayBtn").onclick = async () => {
     if (odeme === "online") {
       await onlineOdemeBaslat({ ad, telefon, email, mahalle, adres }); // iyzico ödeme formunu açar
     } else {
-      await siparisGonder({ tip: "paket", musteri: { ad, telefon, mahalle, adres }, odeme });
+      await siparisGonder({ tip: "paket", musteri: { ad, telefon, mahalle, adres, yemekKarti }, odeme });
       paketFormKapat();
     }
   } catch (e) {

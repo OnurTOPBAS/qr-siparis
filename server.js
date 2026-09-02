@@ -52,6 +52,7 @@ if (config.iyzico === undefined) {
   yaz(CONFIG_PATH, config);
 }
 if (config.siteUrl === undefined) { config.siteUrl = "https://tantunici.com.tr"; yaz(CONFIG_PATH, config); }
+if (config.minPaketTutar === undefined) { config.minPaketTutar = 600; yaz(CONFIG_PATH, config); } // paket (eve sipariş) minimum sepet tutarı
 // iyzipay'i güvenli yükle: paket kurulu değilse site çökmesin, online ödeme kapalı kalsın
 // (top-level await KULLANMA — eski Node sürümlerinde çöker; createRequire her sürümde çalışır)
 let Iyzipay = null;
@@ -116,7 +117,7 @@ app.get("/", (_req, res) => res.sendFile(join(__dirname, "public", "index.html")
 app.get("/api/menu", (_req, res) => res.json(oku(MENU_PATH, { urunler: [] })));
 
 // Müşteri tarafı ayarlar (şifre vb. sızdırmadan)
-app.get("/api/ayarlar", (_req, res) => res.json({ siteAdi: config.siteAdi || "", googleYorumUrl: config.googleYorumUrl || "", iyzicoAktif: iyzicoAktif() }));
+app.get("/api/ayarlar", (_req, res) => res.json({ siteAdi: config.siteAdi || "", googleYorumUrl: config.googleYorumUrl || "", iyzicoAktif: iyzicoAktif(), minPaketTutar: config.minPaketTutar || 0, yemekKartlari: YEMEK_KARTLARI }));
 
 // Bağış: menüde olmayan özel kalem, fiyatı sunucuda sabit
 const BAGIS_ID = 9999;
@@ -179,8 +180,10 @@ function kalemleriDuzenle(urunler) {
 // Admin'e giden kopyada gizli token'ı sızdırma
 const gizle = (o) => { const { token, ...rest } = o; return rest; };
 
-// Geçerli ödeme yöntemleri (online/iyzico henüz yok)
+// Geçerli ödeme yöntemleri (online/iyzico ayrı akışta)
 const GECERLI_ODEME = { nakit: "Kapıda Nakit", kart: "Kapıda Kredi Kartı", yemekkart: "Yemek Kartı (Kapıda)" };
+// Kapıda yemek kartı markaları (kurye doğru cihazı getirsin diye müşteri seçer)
+const YEMEK_KARTLARI = ["Multinet", "Pluxee", "Metropol Card", "SetCard", "Token Flex", "Edenred Ticket"];
 
 app.post("/api/order", (req, res) => {
   const { masa, urunler, not, tip, musteri, odeme } = req.body || {};
@@ -197,7 +200,14 @@ app.post("/api/order", (req, res) => {
     const adres = String(musteri?.adres || "").trim().slice(0, 300);
     if (!ad || !telefon || !adres) return res.status(400).json({ error: "Ad, telefon ve açık adres zorunlu" });
     if (!GECERLI_ODEME[odeme]) return res.status(400).json({ error: "Geçerli bir ödeme yöntemi seçin" });
-    teslimat = { ad, telefon, mahalle, adres, odeme, odemeAd: GECERLI_ODEME[odeme] };
+    let odemeAd = GECERLI_ODEME[odeme];
+    let yemekKarti = null;
+    if (odeme === "yemekkart") {
+      yemekKarti = YEMEK_KARTLARI.find((k) => k === String(musteri?.yemekKarti || "").trim());
+      if (!yemekKarti) return res.status(400).json({ error: "Yemek kartı markası seçin" });
+      odemeAd = "Yemek Kartı: " + yemekKarti;
+    }
+    teslimat = { ad, telefon, mahalle, adres, odeme, odemeAd, yemekKarti };
     masaAd = "📦 Paket";
   } else {
     if (!masa) return res.status(400).json({ error: "Masa gerekli" });
@@ -205,6 +215,10 @@ app.post("/api/order", (req, res) => {
   }
   const items = kalemleriDuzenle(urunler);
   if (!items.length) return res.status(400).json({ error: "Geçerli ürün bulunamadı" });
+  const toplam = items.reduce((s, i) => s + i.fiyat * i.adet, 0);
+  if (paketMi && toplam < (config.minPaketTutar || 0)) {
+    return res.status(400).json({ error: "Minimum paket sipariş tutarı " + (config.minPaketTutar || 0) + " ₺" });
+  }
   // Günlük sıra: paket ise paketler arasında, masa ise o masaya özel
   const bugunBasi = new Date(); bugunBasi.setHours(0, 0, 0, 0);
   const bugunAdet = orders.filter((x) => (paketMi ? x.tip === "paket" : x.masa === masaAd) && new Date(x.tarih) >= bugunBasi).length;
@@ -216,7 +230,7 @@ app.post("/api/order", (req, res) => {
     siraNo: bugunAdet + 1,
     urunler: items,
     not: String(not || "").slice(0, 300),
-    toplam: items.reduce((s, i) => s + i.fiyat * i.adet, 0),
+    toplam,
     durum: "yeni",
     tarih: new Date().toISOString(),
   };
@@ -291,6 +305,7 @@ app.post("/api/payment/baslat", (req, res) => {
   const items = kalemleriDuzenle(urunler);
   if (!items.length) return res.status(400).json({ error: "Geçerli ürün bulunamadı" });
   const toplam = items.reduce((s, i) => s + i.fiyat * i.adet, 0);
+  if (toplam < (config.minPaketTutar || 0)) return res.status(400).json({ error: "Minimum paket sipariş tutarı " + (config.minPaketTutar || 0) + " ₺" });
 
   const bugunBasi = new Date(); bugunBasi.setHours(0, 0, 0, 0);
   const bugunAdet = orders.filter((x) => x.tip === "paket" && new Date(x.tarih) >= bugunBasi).length;
@@ -549,6 +564,22 @@ app.post("/api/admin/order/:id/iptal-reddet", girisGerekli, (req, res) => {
   kaydetOrders();
   io.emit("orderChanged", gizle(o));
   res.json({ ok: true });
+});
+
+// Admin sipariş düzenleme (kasadan ekleme/çıkarma) — fiyat sunucuda yeniden hesaplanır
+app.put("/api/admin/order/:id", girisGerekli, (req, res) => {
+  const o = orders.find((x) => x.id === Number(req.params.id));
+  if (!o) return res.status(404).json({ error: "Sipariş yok" });
+  const { urunler, not } = req.body || {};
+  if (!Array.isArray(urunler) || urunler.length === 0) return res.status(400).json({ error: "En az bir ürün gerekli" });
+  const yeni = kalemleriDuzenle(urunler);
+  if (!yeni.length) return res.status(400).json({ error: "Geçerli ürün bulunamadı" });
+  o.urunler = yeni;
+  if (typeof not === "string") o.not = not.slice(0, 300);
+  o.toplam = yeni.reduce((s, i) => s + i.fiyat * i.adet, 0);
+  kaydetOrders();
+  io.emit("orderChanged", gizle(o));
+  res.json({ ok: true, toplam: o.toplam });
 });
 
 // --- Satış raporu (bugün / bu hafta / bu ay) ---

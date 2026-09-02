@@ -479,3 +479,7 @@ body {
 .iyzi-ust { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--komur); color: #fff; font-weight: 700; }
 .iyzi-ust .kapat { background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; }
 #iyzipay-checkout-form { padding: 10px 14px 20px; min-height: 200px; }
+
+/* Paket formu: select (yemek kartı vb.) */
+.pk-alan select { width: 100%; padding: 12px; border: 1.5px solid #e6d9c8; border-radius: 12px; font-family: inherit; font-size: .95rem; background: #fff; color: var(--komur); }
+.pk-alan select:focus { outline: none; border-color: var(--turuncu); }
