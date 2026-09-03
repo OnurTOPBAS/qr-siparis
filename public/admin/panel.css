@@ -245,10 +245,10 @@ a.ses-btn { text-decoration: none; display: inline-block; }
 .d-sil { width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(231,76,60,.2); color: var(--kirmizi); cursor: pointer; }
 .d-sil:hover { background: var(--kirmizi); color: #fff; }
 .d-bos { color: #9aa4b2; padding: 8px 0; }
-.d-ekle { display: flex; gap: 8px; margin: 12px 0; }
-.d-menu { flex: 1; padding: 9px; border-radius: 8px; border: 1px solid #3a4a63; background: #1c1f26; color: #eee; }
-.d-ekle-btn { padding: 9px 14px; border-radius: 8px; border: none; background: #34506e; color: #fff; cursor: pointer; }
-.d-butonlar { display: flex; gap: 10px; justify-content: flex-end; }
+.d-ekle { display: flex; gap: 8px; margin: 12px 0; align-items: center; }
+.d-menu { flex: 1 1 auto; min-width: 0; max-width: 300px; padding: 9px; border-radius: 8px; border: 1px solid #3a4a63; background: #1c1f26; color: #eee; }
+.d-ekle-btn { flex: 0 0 auto; padding: 9px 16px; border-radius: 8px; border: none; background: #34506e; color: #fff; cursor: pointer; }
+.d-butonlar { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
 .d-vazgec { padding: 10px 16px; border-radius: 8px; border: 1px solid #3a4a63; background: transparent; color: #cfd6e0; cursor: pointer; }
 .d-kaydet { padding: 10px 18px; border-radius: 8px; border: none; background: var(--yesil); color: #06210f; font-weight: 700; cursor: pointer; }
 .d-kaydet:disabled { opacity: .6; }
