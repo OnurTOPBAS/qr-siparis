@@ -60,38 +60,44 @@ function guncelleYazdirBtn() {
 }
 
 function fisYazdir(o) {
+  const para = (n) => Number(n).toFixed(2).replace(".", ",");
   const saat = new Date(o.tarih).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-  const satirlar = o.urunler.map((u) => {
-    const bas = `${u.adet}x ${u.ad}${u.porsiyon ? " (" + u.porsiyon + ")" : ""}`;
-    let alt = "";
-    if (u.sadece) alt += `<div class="fs-not"><b>** ${esc(u.sadece.toUpperCase())} **</b></div>`;
-    if (u.cikarilan && u.cikarilan.length) alt += `<div class="fs-not">- ${esc(u.cikarilan.join(", "))} YOK</div>`;
-    if (u.eklenen && u.eklenen.length) alt += `<div class="fs-not">+ ${esc(u.eklenen.map((e) => e.ad).join(", "))}</div>`;
-    return `<div class="fs-satir"><span>${esc(bas)}</span><span>${u.fiyat * u.adet} TL</span></div>${alt}`;
-  }).join("");
   const paket = o.tip === "paket" && o.teslimat;
   const t = o.teslimat || {};
-  const ustBlok = paket
-    ? `<div class="fs-satir"><b>PAKET SERVIS</b><span>#${o.siraNo || 1}</span></div>
-       <div class="fs-orta2">${saat}</div>
-       <div class="fs-cizgi"></div>
-       <div class="fs-not"><b>${esc(t.ad)}</b></div>
-       <div class="fs-not">TEL: ${esc(t.telefon)}</div>
-       <div class="fs-not">${t.mahalle ? esc(t.mahalle) + " - " : ""}${esc(t.adres)}</div>
-       <div class="fs-not fs-toplam">ODEME: ${esc(t.odemeAd || "")}</div>`
-    : `<div class="fs-satir"><b>MASA ${esc(o.masa)}</b><span>${o.siraNo || 1}. Sipariş</span></div>
-       <div class="fs-orta2">${saat}</div>`;
+
+  // Ürün satırları — her ürün arası ince kesik çizgi
+  const satirlar = o.urunler.map((u) => {
+    let alt = "";
+    if (u.porsiyon) alt += `<div class="fs-urun-ops">${esc(u.porsiyon)}</div>`;
+    if (u.sadece) alt += `<div class="fs-urun-ops"><b>** ${esc(u.sadece.toUpperCase())} **</b></div>`;
+    if (u.cikarilan && u.cikarilan.length) alt += `<div class="fs-urun-ops">- ${esc(u.cikarilan.join(", "))} YOK</div>`;
+    if (u.eklenen && u.eklenen.length) alt += `<div class="fs-urun-ops">+ ${esc(u.eklenen.map((e) => e.ad).join(", "))}</div>`;
+    return `<div class="fs-cizgi"></div>
+      <div class="fs-urun"><span class="fs-urun-ad">${esc(u.ad)}</span><span class="fs-urun-adet">x${u.adet}</span><span class="fs-urun-fiyat">${para(u.fiyat * u.adet)}</span></div>${alt}`;
+  }).join("");
+
+  // Üst bilgi bloğu — etiketli satırlar
+  const bilgiBlok = paket
+    ? `<div class="fs-bilgi"><b>Müşteri :</b> ${esc(t.ad)}</div>
+       <div class="fs-bilgi"><b>Telefon :</b> ${esc(t.telefon)}</div>
+       <div class="fs-bilgi"><b>Adres :</b> ${t.mahalle ? esc(t.mahalle) + " — " : ""}${esc(t.adres)}</div>
+       ${o.not ? `<div class="fs-bilgi"><b>Müşteri Notu :</b> ${esc(o.not)}</div>` : ""}
+       <div class="fs-odeme">Ödeme : ${esc(t.odemeAd || "")}</div>
+       <div class="fs-bilgi">Sipariş No : #${o.siraNo || 1}</div>`
+    : `<div class="fs-odeme">MASA : ${esc(o.masa)}</div>
+       <div class="fs-bilgi">Sipariş No : ${o.siraNo || 1}. Sipariş</div>
+       ${o.not ? `<div class="fs-bilgi"><b>Not :</b> ${esc(o.not)}</div>` : ""}`;
+
   $("fis").innerHTML = `
-    <div class="fs-baslik">SUAT USTA TANTUNI</div>
-    <div class="fs-orta">${paket ? "PAKET FISI" : "SIPARIS FISI"}</div>
+    <div class="fs-baslik">SUAT USTA MERSİN TANTUNİ</div>
+    <div class="fs-alt-baslik">${paket ? esc(t.odemeAd || "Paket Servis") : "Sipariş Fişi"}</div>
     <div class="fs-cizgi"></div>
-    ${ustBlok}
-    <div class="fs-cizgi"></div>`;
+    ${bilgiBlok}
+    <div class="fs-tarih">${saat}</div>`;
   $("fis").innerHTML += `
     ${satirlar}
     <div class="fs-cizgi"></div>
-    <div class="fs-satir fs-toplam"><span>TOPLAM</span><span>${o.toplam} TL</span></div>
-    ${o.not ? `<div class="fs-cizgi"></div><div class="fs-not2">NOT: ${esc(o.not)}</div>` : ""}
+    <div class="fs-toplam-satir"><span>Toplam :</span><span>${para(o.toplam)}</span></div>
     <div class="fs-alt-yazi">* Afiyet olsun *</div>`;
   window.print();
 }
