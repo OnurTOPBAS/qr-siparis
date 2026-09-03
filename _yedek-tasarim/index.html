@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suat Usta Tantuni — Menü</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=9" />
+</head>
+<body>
+  <!-- Kapak (hero) -->
+  <header class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-ic">
+      <div class="masa-rozet">🍽️ Masa <span id="masaNo">-</span></div>
+      <h1 class="marka">Suat Usta Tantuni</h1>
+      <p class="slogan">Mersin'in efsane lezzeti — taze lavaş, bol malzeme</p>
+      <a href="#menuAlani" class="hero-btn">Menüyü Keşfet ↓</a>
+    </div>
+  </header>
+
+  <!-- Kategori geçiş şeridi -->
+  <nav id="katNav" class="kat-nav"></nav>
+
+  <main id="menuAlani" class="menu"></main>
+
+  <!-- Google yorum daveti (link tanımlıysa görünür) -->
+  <section id="yorumKutu" class="yorum-kutu" hidden>
+    <div class="yorum-yildiz">⭐️⭐️⭐️⭐️⭐️</div>
+    <h3>Lezzetimizi beğendin mi?</h3>
+    <p>Google'da bir yorum bırakarak bize destek olabilirsin 🧡</p>
+    <a id="yorumLink" class="yorum-btn" href="#" target="_blank" rel="noopener">Google'da Yorum Yap</a>
+  </section>
+
+  <footer class="alt-bilgi">
+    <p>Afiyet olsun 🧡</p>
+    <span>Suat Usta Mersin Tantuni · QR Sipariş</span>
+
+    <!-- Güvenli ödeme logoları -->
+    <div class="odeme-logolar" aria-label="Güvenli ödeme yöntemleri">
+      <svg class="odeme-logo" viewBox="0 0 48 30" role="img" aria-label="Visa">
+        <rect width="48" height="30" rx="4" fill="#1A1F71" />
+        <text x="24" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" font-style="italic" fill="#fff" letter-spacing=".5">VISA</text>
+      </svg>
+      <svg class="odeme-logo" viewBox="0 0 48 30" role="img" aria-label="Mastercard">
+        <rect width="48" height="30" rx="4" fill="#fff" stroke="#e6e6e6" />
+        <circle cx="20" cy="15" r="9" fill="#EB001B" />
+        <circle cx="28" cy="15" r="9" fill="#F79E1B" fill-opacity=".85" />
+      </svg>
+      <svg class="odeme-logo iyzico" viewBox="0 0 120 30" role="img" aria-label="iyzico ile öde">
+        <rect width="120" height="30" rx="6" fill="#fff" stroke="#e6e6e6" />
+        <text x="12" y="19" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#0B63F6">iyzico</text>
+        <text x="55" y="19" font-family="Arial, sans-serif" font-size="11" fill="#555">ile öde</text>
+      </svg>
+    </div>
+    <p class="odeme-guvenli">🔒 Ödemeleriniz 256-bit SSL ve iyzico güvencesiyle korunur</p>
+
+    <nav class="alt-linkler">
+      <a href="/hakkimizda.html">Hakkımızda</a>
+      <a href="/mesafeli-satis-sozlesmesi.html">Mesafeli Satış Sözleşmesi</a>
+      <a href="/gizlilik-kvkk.html">Gizlilik ve KVKK</a>
+      <a href="/teslimat-iade.html">Teslimat ve İade Koşulları</a>
+      <a href="/iletisim.html">İletişim</a>
+    </nav>
+  </footer>
+
+  <!-- Sokak hayvanlarına bağış popup -->
+  <div id="bagisPopup" class="bagis-pop" hidden>
+    <div class="bagis-ic">
+      <div class="bagis-pati">🐾</div>
+      <h2>Sokak hayvanlarına destek</h2>
+      <p>Siparişine <strong>100 ₺</strong> bağış ekleyerek sokak hayvanlarının mama ve bakımına katkı sağlayabilirsin.</p>
+      <button id="bagisEvet" class="siparis-btn">🐾 100 ₺ Bağış Ekle</button>
+      <button id="bagisHayir" class="siparis-btn ikincil">Şimdi değil</button>
+    </div>
+  </div>
+
+  <!-- Geri sayım hapı (aktif sipariş süresi) -->
+  <div id="sayacPill" class="sayac-pill" hidden>⏱ <span id="sayacMetin">1:30</span></div>
+
+  <!-- Sepet butonu (logo) -->
+  <button id="sepetBtn" class="sepet-fab" hidden aria-label="Sepetim">
+    <svg class="fab-svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4.5 8.5h15l-1.2 10.1a2 2 0 0 1-2 1.8H7.7a2 2 0 0 1-2-1.8L4.5 8.5z" />
+      <path d="M8.5 8.5 10 4M15.5 8.5 14 4" />
+      <path d="M9.6 12.5v4M14.4 12.5v4" />
+    </svg>
+    <span class="fab-badge" id="sepetAdet">0</span>
+  </button>
+
+  <!-- Sepet / sipariş paneli -->
+  <div id="sepetPanel" class="panel" hidden>
+    <div class="panel-ic">
+      <div class="panel-tutamac"></div>
+      <div class="panel-baslik">
+        <h2 id="panelBaslik">Sepetim</h2>
+        <button id="kapatBtn" class="kapat" aria-label="Sepeti kapat">✕</button>
+      </div>
+      <div id="panelSayac" class="panel-sayac" hidden></div>
+      <div id="sepetListe" class="sepet-liste"></div>
+      <label class="not-alani">
+        <span>📝 Sipariş notu (opsiyonel)</span>
+        <textarea id="not" placeholder="Örn: Acılı olsun, ekmek az kızarsın..."></textarea>
+      </label>
+      <div class="panel-toplam">Toplam <strong><span id="panelToplam">0</span> ₺</strong></div>
+      <button id="siparisVerBtn" class="siparis-btn">Siparişi Gönder</button>
+      <button id="siparisIptalBtn" class="siparis-btn tehlike" hidden>Siparişi İptal Et</button>
+    </div>
+  </div>
+
+  <!-- Paket servis: teslimat + ödeme formu -->
+  <div id="paketPanel" class="panel" hidden>
+    <div class="panel-ic">
+      <div class="panel-tutamac"></div>
+      <div class="panel-baslik">
+        <h2>📦 Teslimat Bilgileri</h2>
+        <button id="paketKapat" class="kapat" aria-label="Kapat">✕</button>
+      </div>
+      <div class="pk-form">
+        <label class="pk-alan"><span>Ad Soyad *</span><input id="pkAd" type="text" maxlength="60" autocomplete="name" placeholder="Adınız Soyadınız" /></label>
+        <label class="pk-alan"><span>Telefon *</span><input id="pkTel" type="tel" maxlength="20" autocomplete="tel" placeholder="05XX XXX XX XX" /></label>
+        <label class="pk-alan" id="pkEmailAlan" hidden><span>E-posta * <small>(online ödeme için)</small></span><input id="pkEmail" type="email" maxlength="100" autocomplete="email" placeholder="ornek@email.com" /></label>
+        <label class="pk-alan"><span>Mahalle / İlçe</span><input id="pkMahalle" type="text" maxlength="80" placeholder="Örn: Merkez Mah. / Akdeniz" /></label>
+        <label class="pk-alan"><span>Açık Adres *</span><textarea id="pkAdres" rows="3" maxlength="300" placeholder="Sokak, bina no, daire, kat ve tarif"></textarea></label>
+        <div class="pk-odeme">
+          <span class="pk-odeme-baslik">Ödeme Yöntemi *</span>
+          <label class="pk-secim"><input type="radio" name="odeme" value="nakit" checked /><span>💵 Kapıda Nakit</span></label>
+          <label class="pk-secim"><input type="radio" name="odeme" value="kart" /><span>💳 Kapıda Kredi Kartı</span></label>
+          <label class="pk-secim"><input type="radio" name="odeme" value="yemekkart" /><span>🍽️ Yemek Kartı (Kapıda)</span></label>
+          <label class="pk-secim pasif"><input type="radio" name="odeme" value="online" disabled /><span>🌐 Online Ödeme <small>(yakında)</small></span></label>
+          <label class="pk-alan" id="pkYemekKartAlan" hidden style="margin-top:10px">
+            <span>Hangi yemek kartı? *</span>
+            <select id="pkYemekKart"></select>
+          </label>
+        </div>
+      </div>
+      <div class="pk-hata" id="pkHata" hidden></div>
+      <div class="panel-toplam">Toplam <strong><span id="pkToplam">0</span> ₺</strong></div>
+      <button id="paketOnayBtn" class="siparis-btn">Siparişi Gönder</button>
+    </div>
+  </div>
+
+  <!-- iyzico online ödeme ekranı -->
+  <div id="iyziOverlay" class="iyzi-overlay" hidden>
+    <div class="iyzi-box">
+      <div class="iyzi-ust">
+        <span>🔒 Güvenli Ödeme</span>
+        <button id="iyziKapat" class="kapat" aria-label="Kapat">✕</button>
+      </div>
+      <div id="iyzipay-checkout-form" class="responsive"></div>
+    </div>
+  </div>
+
+  <!-- Toast bildirimi -->
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="app.js?v=9"></script>
+</body>
+</html>
