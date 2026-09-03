@@ -2,24 +2,19 @@
 [hidden] { display: none !important; }
 
 :root {
-  --krem: #f6f1e8;
+  --krem: #faf4ea;
   --kart: #ffffff;
-  --komur: #1e1510;
-  --kirmizi: #bd3a29;
-  --kirmizi-koyu: #9c2c1e;
-  --turuncu: #d9761a;
-  --amber: #e6a636;
-  --altin: #c39a4d;          /* premium altın aksan */
-  --altin-koyu: #a67c33;
+  --komur: #241a15;
+  --kirmizi: #c0392b;
+  --kirmizi-koyu: #a12a1d;
+  --turuncu: #e8801e;
+  --amber: #f6a821;
   --yesil: #2e9e5b;
-  --metin: #382b23;
-  --soluk: #7c6c5f;
-  --cizgi: #ebe2d4;          /* ince kenarlık */
-  /* Katmanlı, yumuşak gölge — premium his için daha derin ve rafine */
-  --golge: 0 1px 2px rgba(60,35,15,.04), 0 6px 16px rgba(60,35,15,.055), 0 18px 40px rgba(60,35,15,.06);
-  --golge-yuksek: 0 2px 6px rgba(60,35,15,.06), 0 14px 30px rgba(60,35,15,.10), 0 30px 60px rgba(60,35,15,.08);
-  /* Boşluk ölçeği (8px tabanlı) */
-  --bo-1: 8px; --bo-2: 16px; --bo-3: 24px; --bo-4: 32px; --bo-5: 48px;
+  --metin: #3a2e27;
+  --soluk: #6f6055;
+  /* Katmanlı, yumuşak gölge — tek sert gölgeden daha zarif durur */
+  --golge: 0 1px 2px rgba(80,40,20,.05), 0 4px 10px rgba(80,40,20,.06), 0 12px 28px rgba(80,40,20,.07);
+  --golge-yuksek: 0 2px 4px rgba(80,40,20,.06), 0 10px 24px rgba(80,40,20,.10), 0 24px 48px rgba(80,40,20,.08);
 }
 
 html { scroll-behavior: smooth; }
@@ -157,33 +152,30 @@ body {
   color: var(--amber); background: var(--krem);
   padding: 0 12px; font-size: .75rem; line-height: 16px;
 }
-/* Kategori başlığı — rafine, altın aksan çizgili (neon kaldırıldı) */
+/* Kategori başlığı — turuncu neon, italik, bold */
 .kategori {
-  font-size: 1.5rem;
+  font-size: 1.55rem;
   font-weight: 800;
-  letter-spacing: -.015em;
-  margin: 30px 0 18px;
-  color: var(--komur);
-  display: flex; align-items: center; gap: 12px;
-}
-.kategori::before {
-  content: ""; flex: 0 0 auto;
-  width: 30px; height: 3px; border-radius: 2px;
-  background: linear-gradient(90deg, var(--turuncu), var(--altin));
+  font-style: italic;
+  letter-spacing: .6px;
+  margin: 26px 0 16px;
+  color: #ff7a18;
+  text-shadow:
+    0 0 5px rgba(255,138,40,.75),
+    0 0 14px rgba(255,110,20,.5),
+    0 0 30px rgba(255,90,10,.28);
 }
 
 /* Ürün kartı */
 .urun {
   display: flex; gap: 16px;
-  background: var(--kart); border-radius: 20px;
+  background: var(--kart); border-radius: 22px;
   padding: 16px; margin-bottom: 16px;
   box-shadow: var(--golge);
-  border: 1px solid var(--cizgi);
+  border: 1px solid rgba(120,80,50,.06);
   opacity: 0; transform: translateY(10px);
   animation: girisAnim .28s ease forwards;
-  transition: box-shadow .25s ease, transform .25s ease;
 }
-@media (hover: hover) { .urun:hover { box-shadow: var(--golge-yuksek); transform: translateY(-2px); } }
 @keyframes girisAnim { to { opacity: 1; transform: translateY(0); } }
 
 /* --- Kampanyalı menüler --- */
@@ -205,10 +197,10 @@ body {
 
 /* Et / Tavuk ürünlerine göre çok hafif gradyen (okunurluğu bozmayacak düşük opaklık) */
 .urun--et {
-  background: linear-gradient(118deg, rgba(189,58,41,.05) 0%, var(--kart) 52%);
+  background: linear-gradient(120deg, rgba(192,57,43,.11) 0%, rgba(192,57,43,.03) 38%, var(--kart) 72%);
 }
 .urun--tavuk {
-  background: linear-gradient(118deg, rgba(230,166,54,.07) 0%, var(--kart) 52%);
+  background: linear-gradient(120deg, rgba(240,168,32,.16) 0%, rgba(240,168,32,.05) 38%, var(--kart) 72%);
 }
 
 .urun-medalyon {
@@ -217,7 +209,6 @@ body {
   background: linear-gradient(145deg, #ffe9cf, #ffd7a8);
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
-  box-shadow: inset 0 0 0 1px rgba(30,21,16,.06);
 }
 .medalyon-emoji { font-size: 3rem; }
 .urun-medalyon img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -226,9 +217,8 @@ body {
 .urun-ust { display: flex; align-items: flex-start; gap: 8px; justify-content: space-between; }
 .urun-ust h3 { font-size: 1.06rem; font-weight: 700; color: var(--komur); line-height: 1.3; letter-spacing: -.01em; }
 .kalori {
-  flex: 0 0 auto; font-size: .72rem; font-weight: 600; color: var(--altin-koyu);
-  background: rgba(195,154,73,.12); border: 1px solid rgba(195,154,73,.24);
-  padding: 3px 9px; border-radius: 20px; white-space: nowrap; letter-spacing: .01em;
+  flex: 0 0 auto; font-size: .75rem; font-weight: 600; color: #8a5200;
+  background: #fff2d6; padding: 3px 8px; border-radius: 10px; white-space: nowrap;
 }
 .urun-aciklama { font-size: .875rem; color: var(--soluk); margin: 6px 0; line-height: 1.5; }
 
@@ -245,20 +235,19 @@ body {
 .ozel-grup { margin: 10px 0 2px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .ozel-baslik { font-size: .75rem; color: var(--soluk); width: 100%; font-weight: 600; }
 .cikar-chip, .ekle-chip {
-  border: 1.5px solid var(--cizgi); background: #fff; color: #6b5c50;
-  border-radius: 20px; padding: 9px 15px; min-height: 40px; font-size: .86rem; cursor: pointer;
-  font-family: inherit; font-weight: 500; transition: background .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease;
+  border: 1.5px solid #ecdcc7; background: #fff; color: #6b5c50;
+  border-radius: 20px; padding: 9px 14px; min-height: 40px; font-size: .875rem; cursor: pointer;
+  font-family: inherit; font-weight: 500; transition: background .18s ease, border-color .18s ease, color .18s ease;
 }
-@media (hover: hover) { .cikar-chip:hover, .ekle-chip:hover { border-color: #d8c7ad; box-shadow: 0 2px 8px rgba(60,35,15,.06); } }
 .cikar-chip.aktif { background: #fdecea; border-color: var(--kirmizi); color: var(--kirmizi); text-decoration: line-through; }
 .ekle-chip.aktif { background: #e7f7ee; border-color: var(--yesil); color: #1e7d45; font-weight: 600; }
 
 /* "Sadece Et İstiyorum" kutucuğu (porsiyon ve İstemediklerin'den ayrı) */
 .sadece-kutu {
   display: flex; align-items: center; gap: 9px; width: 100%;
-  margin-top: 10px; padding: 12px 14px;
-  border: 1.5px solid var(--cizgi); border-radius: 14px;
-  background: #fcf8f1; color: var(--metin);
+  margin-top: 10px; padding: 11px 13px;
+  border: 1.5px dashed #e3ceb0; border-radius: 12px;
+  background: #fffaf2; color: var(--metin);
   font-family: inherit; font-size: .9rem; font-weight: 600; text-align: left; cursor: pointer;
   transition: .15s;
 }
@@ -494,3 +483,14 @@ body {
 /* Paket formu: select (yemek kartı vb.) */
 .pk-alan select { width: 100%; padding: 12px; border: 1.5px solid #e6d9c8; border-radius: 12px; font-family: inherit; font-size: .95rem; background: #fff; color: var(--komur); }
 .pk-alan select:focus { outline: none; border-color: var(--turuncu); }
+
+/* ===== Sepete ekleme vurgusu (dikkat çekici) ===== */
+.sepet-fab.vurgu { animation: sepetVurgu .55s cubic-bezier(.34,1.56,.64,1); }
+@keyframes sepetVurgu {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.28); box-shadow: 0 0 0 12px rgba(192,57,43,.20), 0 10px 26px rgba(192,57,43,.55); }
+  55%  { transform: scale(.92);  box-shadow: 0 0 0 5px rgba(192,57,43,.12), 0 8px 22px rgba(192,57,43,.45); }
+  100% { transform: scale(1);    box-shadow: 0 8px 22px rgba(192,57,43,.45); }
+}
+.fab-badge.pop { animation: rozetPop .45s ease; }
+@keyframes rozetPop { 0% { transform: scale(1); } 45% { transform: scale(1.6); } 100% { transform: scale(1); } }

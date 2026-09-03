@@ -222,12 +222,21 @@ function sepeteEkle(u, kart) {
   else sepet.set(k, { urun: u, porsiyon, cikarilan, eklenen, sadece, birimFiyat, adet: 1 });
 
   guncelleSepetCubugu();
+  sepetVurgula(); // sepet logosunu zıplat + rozet pop (dikkat çekici)
   otoKaydetTetikle(); // aktif siparişteysek değişikliği kaydet
   const btn = kart.querySelector(".ekle-btn");
   btn.textContent = "Eklendi ✓";
   btn.classList.add("eklendi");
   setTimeout(() => { btn.textContent = "＋ Sepete Ekle"; btn.classList.remove("eklendi"); }, 1000);
   bagisSor();
+}
+
+// Sepete ekleyince sepet logosunu vurgula (bounce + halka + rozet pop)
+function sepetVurgula() {
+  const fab = $("sepetBtn");
+  const badge = $("sepetAdet");
+  if (fab) { fab.classList.remove("vurgu"); void fab.offsetWidth; fab.classList.add("vurgu"); }
+  if (badge) { badge.classList.remove("pop"); void badge.offsetWidth; badge.classList.add("pop"); }
 }
 
 // --- Sokak hayvanlarına bağış popup'ı ---
