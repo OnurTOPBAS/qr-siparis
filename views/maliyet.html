@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maliyet & Kâr — Yönetim</title>
+  <link rel="stylesheet" href="/admin/panel.css?v=7" />
+</head>
+<body>
+  <nav class="nav">
+    <span class="marka">🍽️ Yönetim</span>
+    <a href="/panel">🔔 Siparişler</a>
+    <a href="/admin/gecmis">🕘 Geçmiş</a>
+    <a href="/admin/kampanya">🔥 Kampanyalar</a>
+    <a href="/admin/menu">📋 Menü</a>
+    <a href="/admin/maliyet" class="aktif">💰 Maliyet & Kâr</a>
+    <a href="/admin/masalar">🪑 Masalar & QR</a>
+    <a href="/admin/rapor">📊 Raporlar</a>
+    <div class="sag">
+      <button class="cikis" id="cikis">Çıkış</button>
+    </div>
+  </nav>
+
+  <main class="maliyet-sayfa">
+    <div class="maliyet-ust">
+      <h2>💰 Maliyet & Kâr Analizi</h2>
+      <input id="ara" class="maliyet-ara" type="text" placeholder="Ürün ara…" />
+    </div>
+    <div class="maliyet-ozet" id="ozet"></div>
+    <div id="liste" class="maliyet-liste">Yükleniyor…</div>
+  </main>
+
+  <script src="/admin/maliyet.js?v=1"></script>
+</body>
+</html>

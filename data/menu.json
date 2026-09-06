@@ -13,6 +13,28 @@
         "Soğan",
         "Yağ",
         "Maydanoz"
+      ],
+      "maliyet": [
+        {
+          "ad": "Et",
+          "tutar": 90
+        },
+        {
+          "ad": "Lavaş",
+          "tutar": 8
+        },
+        {
+          "ad": "Domates",
+          "tutar": 5
+        },
+        {
+          "ad": "Soğan",
+          "tutar": 3
+        },
+        {
+          "ad": "Ambalaj",
+          "tutar": 4
+        }
       ]
     },
     {

@@ -114,7 +114,12 @@ const upload = multer({
 // ============ MÜŞTERİ (açık) ============
 app.get("/", (_req, res) => res.sendFile(join(__dirname, "public", "index.html")));
 
-app.get("/api/menu", (_req, res) => res.json(oku(MENU_PATH, { urunler: [] })));
+app.get("/api/menu", (_req, res) => {
+  const menu = oku(MENU_PATH, { urunler: [] });
+  // Maliyet/kâr verisi müşteriye ASLA gitmez — sadece admin görür
+  const urunler = (menu.urunler || []).map(({ maliyet, ...u }) => u);
+  res.json({ urunler });
+});
 
 // Müşteri tarafı ayarlar (şifre vb. sızdırmadan)
 app.get("/api/ayarlar", (_req, res) => res.json({ siteAdi: config.siteAdi || "", googleYorumUrl: config.googleYorumUrl || "", iyzicoAktif: iyzicoAktif(), minPaketTutar: config.minPaketTutar || 0, yemekKartlari: YEMEK_KARTLARI }));
@@ -420,6 +425,50 @@ app.get("/admin/masalar", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, 
 app.get("/admin/rapor", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "rapor.html")));
 app.get("/admin/gecmis", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "gecmis.html")));
 app.get("/admin/kampanya", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "kampanya.html")));
+app.get("/admin/maliyet", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "maliyet.html")));
+
+// Ürünün "satış fiyatı" — porsiyonluysa 1. porsiyon, değilse ürün fiyatı
+const satisFiyati = (u) => (Array.isArray(u.porsiyonlar) && u.porsiyonlar.length ? Number(u.porsiyonlar[0].fiyat) : Number(u.fiyat)) || 0;
+
+// Maliyet/kâr verisi — tüm ürünler
+app.get("/api/admin/maliyet", girisGerekli, (_req, res) => {
+  const menu = oku(MENU_PATH, { urunler: [] });
+  const urunler = menu.urunler.map((u) => {
+    const maliyet = Array.isArray(u.maliyet) ? u.maliyet : [];
+    const toplamMaliyet = maliyet.reduce((s, k) => s + (Number(k.tutar) || 0), 0);
+    const satis = satisFiyati(u);
+    return {
+      id: u.id, ad: u.ad, kategori: u.kategori || "",
+      satis, porsiyonlu: Array.isArray(u.porsiyonlar) && u.porsiyonlar.length > 0,
+      maliyet, toplamMaliyet,
+      kar: satis - toplamMaliyet,
+      oran: satis > 0 ? Math.round(((satis - toplamMaliyet) / satis) * 100) : 0,
+    };
+  });
+  res.json({ urunler });
+});
+
+// Bir ürünün maliyet kalemlerini (+ opsiyonel satış fiyatını) kaydet
+app.post("/api/admin/maliyet/:id", girisGerekli, (req, res) => {
+  const menu = oku(MENU_PATH, { urunler: [] });
+  const u = menu.urunler.find((x) => x.id === Number(req.params.id));
+  if (!u) return res.status(404).json({ error: "Ürün yok" });
+  const b = req.body || {};
+  // Maliyet kalemleri
+  u.maliyet = (Array.isArray(b.maliyet) ? b.maliyet : [])
+    .map((k) => ({ ad: String(k.ad || "").slice(0, 60), tutar: Math.max(0, Number(k.tutar) || 0) }))
+    .filter((k) => k.ad || k.tutar);
+  // Satış fiyatı düzenlendiyse menüye de yaz (tek kaynak menü)
+  if (b.satis != null && Number(b.satis) >= 0) {
+    const yeni = Number(b.satis);
+    if (Array.isArray(u.porsiyonlar) && u.porsiyonlar.length) u.porsiyonlar[0].fiyat = yeni;
+    else u.fiyat = yeni;
+  }
+  yaz(MENU_PATH, menu);
+  const toplam = u.maliyet.reduce((s, k) => s + k.tutar, 0);
+  const satis = satisFiyati(u);
+  res.json({ ok: true, toplamMaliyet: toplam, satis, kar: satis - toplam, oran: satis > 0 ? Math.round(((satis - toplam) / satis) * 100) : 0 });
+});
 app.get("/admin/ayarlar", girisGerekli, (_req, res) => res.sendFile(join(VIEWS, "ayarlar.html")));
 
 // Ayarları getir (güvenlik anahtarını göstermeden — sadece var/yok)
@@ -485,7 +534,7 @@ app.post("/api/admin/menu/urun", girisGerekli, (req, res) => {
     const u = menu.urunler.find((x) => x.id === Number(g.id));
     if (!u) return res.status(404).json({ error: "Ürün bulunamadı" });
     // eski alanları temizle (id + resim hariç), sonra yeniden yaz
-    Object.keys(u).forEach((k) => { if (k !== "id" && k !== "resim") delete u[k]; });
+    Object.keys(u).forEach((k) => { if (k !== "id" && k !== "resim" && k !== "maliyet") delete u[k]; });
     Object.assign(u, temel);
     if (g.resim) u.resim = g.resim;
     if (u.resim === undefined) u.resim = "";
