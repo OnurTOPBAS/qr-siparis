@@ -16,7 +16,44 @@ fetch("/api/menu").then((r) => r.json()).then((d) => { adminMenu = d.urunler || 
 
 let sesAcik = false;
 const zilSesi = new Audio("/sounds/zil.mp3");
-zilSesi.volume = 1.0; // ses seviyesi: en fazla 1.0 (üstü hata verir, kod durur!)
+zilSesi.volume = 1.0;
+zilSesi.preload = "auto";
+
+// --- Web Audio: DOSYAYA BAĞLI OLMAYAN güvenilir bip (mp3 kaybolsa/404 olsa bile çalar) ---
+let sesCtx = null;
+let keepAlive = null; // sekme arka plandayken sesin kesilmemesi için sürekli (sessiz) ses
+function sesKur() {
+  try {
+    if (!sesCtx) sesCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (sesCtx.state === "suspended") sesCtx.resume();
+    if (!keepAlive) {
+      // sessiz sürekli döngü → AudioContext hep "çalışıyor" kalır, arka sekmede bip anında tetiklenir
+      const buf = sesCtx.createBuffer(1, sesCtx.sampleRate, sesCtx.sampleRate);
+      keepAlive = sesCtx.createBufferSource();
+      keepAlive.buffer = buf; keepAlive.loop = true;
+      const g = sesCtx.createGain(); g.gain.value = 0.02;
+      keepAlive.connect(g).connect(sesCtx.destination);
+      keepAlive.start();
+    }
+  } catch {}
+}
+// 3 kez "çın" — telefon zili gibi dikkat çekici
+function sentetikBip() {
+  if (!sesCtx) return;
+  try {
+    if (sesCtx.state === "suspended") sesCtx.resume();
+    const t = sesCtx.currentTime;
+    [0, 0.30, 0.60].forEach((d) => {
+      const o = sesCtx.createOscillator(), g = sesCtx.createGain();
+      o.type = "sine"; o.frequency.value = 1050;
+      g.gain.setValueAtTime(0.0001, t + d);
+      g.gain.exponentialRampToValueAtTime(0.7, t + d + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.24);
+      o.connect(g).connect(sesCtx.destination);
+      o.start(t + d); o.stop(t + d + 0.26);
+    });
+  } catch {}
+}
 
 // Çıkış
 $("cikis").onclick = async () => {
@@ -24,25 +61,24 @@ $("cikis").onclick = async () => {
   location.href = "/admin/login";
 };
 
-// --- Bildirim sesi (MP3) ---
+// --- Bildirim sesi ---
 $("sesAc").onclick = () => {
   sesAcik = true;
   $("sesAc").textContent = "🔊 Ses Açık";
   $("sesAc").classList.add("aktif");
-  zilSesi.play().catch(() => {}); // tarayıcı kilidini aç + test sesi
+  sesKur();          // AudioContext'i aç + keep-alive başlat (kullanıcı hareketiyle kilit açılır)
+  sentetikBip();     // test sesi
+  zilSesi.play().then(() => { zilSesi.pause(); zilSesi.currentTime = 0; }).catch(() => {}); // mp3 kilidini aç
 };
 
 let zilDurdurZamanlayici = null;
 function bipCal() {
   if (!sesAcik) return;
+  sesKur();          // ctx uykudaysa uyandır
+  sentetikBip();     // HER ZAMAN çalar (dosyasız, arka sekmede de)
   clearTimeout(zilDurdurZamanlayici);
-  zilSesi.currentTime = 0; // arka arkaya siparişlerde baştan çalsın
-  zilSesi.play().catch(() => {});
-  // 2 saniye sonra durdur
-  zilDurdurZamanlayici = setTimeout(() => {
-    zilSesi.pause();
-    zilSesi.currentTime = 0;
-  }, 2000);
+  try { zilSesi.currentTime = 0; zilSesi.play().catch(() => {}); } catch {} // mp3 varsa ek zengin ses
+  zilDurdurZamanlayici = setTimeout(() => { try { zilSesi.pause(); zilSesi.currentTime = 0; } catch {} }, 2500);
 }
 
 // --- Termal fiş yazdırma ---

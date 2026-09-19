@@ -502,8 +502,7 @@ $("paketOnayBtn").onclick = async () => {
     }
   } catch (e) {
     hata(e.message === "gonder" ? "Gönderilemedi, tekrar deneyin." : e.message);
-    btn.textContent = em;
-  } finally { btn.disabled = false; }
+  } finally { btn.disabled = false; btn.textContent = em; } // metni HER ZAMAN eski haline getir (takılmasın)
 };
 
 // --- Online ödeme (iyzico ödeme formu) ---
@@ -517,19 +516,22 @@ async function onlineOdemeBaslat(musteri) {
   iyzicoFormGoster(d.checkoutFormContent);
 }
 
+let iyziEnjekte = []; // enjekte edilen iyzico script düğümleri (birikmesin diye takip)
+function iyziTemizle() { iyziEnjekte.forEach((n) => n.remove()); iyziEnjekte = []; document.getElementById("iyzipay-checkout-form").innerHTML = ""; }
 function iyzicoFormGoster(html) {
+  iyziTemizle(); // önceki enjeksiyonu temizle
   paketFormKapat();
   $("iyziOverlay").hidden = false;
   document.body.style.overflow = "hidden";
-  document.getElementById("iyzipay-checkout-form").innerHTML = "";
   // iyzico script'i (innerHTML script çalıştırmaz; createContextualFragment çalıştırır)
   const frag = document.createRange().createContextualFragment(html);
+  iyziEnjekte = [...frag.childNodes];
   document.body.appendChild(frag);
 }
 $("iyziKapat").onclick = () => {
   $("iyziOverlay").hidden = true;
   document.body.style.overflow = "";
-  document.getElementById("iyzipay-checkout-form").innerHTML = "";
+  iyziTemizle();
 };
 
 // --- İptal talebi (kasadan onay gerekir) ---
