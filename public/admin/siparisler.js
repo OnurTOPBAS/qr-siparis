@@ -14,12 +14,15 @@ const siparisVerileri = new Map(); // id -> sipariş (düzenleme için)
 let adminMenu = [];
 fetch("/api/menu").then((r) => r.json()).then((d) => { adminMenu = d.urunler || []; }).catch(() => {});
 
-let sesAcik = false;
+// Ses tercihi: VARSAYILAN AÇIK (kullanıcı kapatana kadar). Sayfa açılınca otomatik açık gelir.
+let sesAcik = localStorage.getItem("sesTercih") !== "0";
 const zilSesi = new Audio("/sounds/zil.mp3");
 zilSesi.volume = 1.0;
 zilSesi.preload = "auto";
+let mp3Var = true;
+zilSesi.addEventListener("error", () => { mp3Var = false; }); // dosya yoksa/404 → yedek bip
 
-// --- Web Audio: DOSYAYA BAĞLI OLMAYAN güvenilir bip (mp3 kaybolsa/404 olsa bile çalar) ---
+// --- Web Audio: DOSYAYA BAĞLI OLMAYAN güvenilir bip (yalnızca mp3 çalmazsa yedek) ---
 let sesCtx = null;
 let keepAlive = null; // sekme arka plandayken sesin kesilmemesi için sürekli (sessiz) ses
 function sesKur() {
@@ -62,24 +65,47 @@ $("cikis").onclick = async () => {
 };
 
 // --- Bildirim sesi ---
-$("sesAc").onclick = () => {
-  sesAcik = true;
-  $("sesAc").textContent = "🔊 Ses Açık";
-  $("sesAc").classList.add("aktif");
-  sesKur();          // AudioContext'i aç + keep-alive başlat (kullanıcı hareketiyle kilit açılır)
-  sentetikBip();     // test sesi
-  zilSesi.play().then(() => { zilSesi.pause(); zilSesi.currentTime = 0; }).catch(() => {}); // mp3 kilidini aç
-};
-
 let zilDurdurZamanlayici = null;
-function bipCal() {
-  if (!sesAcik) return;
-  sesKur();          // ctx uykudaysa uyandır
-  sentetikBip();     // HER ZAMAN çalar (dosyasız, arka sekmede de)
+// Kendi sesini (mp3) çal; dosya yoksa/çalmazsa yedek bip
+function sesiCal() {
+  sesKur();
   clearTimeout(zilDurdurZamanlayici);
-  try { zilSesi.currentTime = 0; zilSesi.play().catch(() => {}); } catch {} // mp3 varsa ek zengin ses
-  zilDurdurZamanlayici = setTimeout(() => { try { zilSesi.pause(); zilSesi.currentTime = 0; } catch {} }, 2500);
+  if (mp3Var) {
+    try {
+      zilSesi.currentTime = 0;
+      const p = zilSesi.play();
+      if (p && p.catch) p.catch(() => sentetikBip()); // mp3 çalmazsa yedek
+    } catch { sentetikBip(); }
+    zilDurdurZamanlayici = setTimeout(() => { try { zilSesi.pause(); zilSesi.currentTime = 0; } catch {} }, 2500);
+  } else {
+    sentetikBip();
+  }
 }
+function bipCal() { if (sesAcik) sesiCal(); }
+
+function sesButonGuncelle() {
+  $("sesAc").textContent = sesAcik ? "🔊 Ses Açık" : "🔇 Sesi Aç";
+  $("sesAc").classList.toggle("aktif", sesAcik);
+}
+sesButonGuncelle();
+
+// Otomatik kilit açma: ses açıksa, sayfadaki İLK tıklama/tuşta kilidi aç (ayrı butona basmaya gerek yok)
+function sesKilidiniAc() {
+  sesKur();
+  try { zilSesi.play().then(() => { zilSesi.pause(); zilSesi.currentTime = 0; }).catch(() => {}); } catch {}
+}
+if (sesAcik) {
+  document.addEventListener("pointerdown", sesKilidiniAc, { once: true });
+  document.addEventListener("keydown", sesKilidiniAc, { once: true });
+}
+
+// Buton: sesi aç/kapat (tercih hatırlanır)
+$("sesAc").onclick = () => {
+  sesAcik = !sesAcik;
+  localStorage.setItem("sesTercih", sesAcik ? "1" : "0");
+  sesButonGuncelle();
+  if (sesAcik) sesiCal(); // açınca kendi sesinle test
+};
 
 // --- Termal fiş yazdırma ---
 let otoYazdir = localStorage.getItem("otoYazdir") === "1";
