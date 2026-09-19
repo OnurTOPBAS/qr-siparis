@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=11" />
+  <link rel="stylesheet" href="style.css?v=12" />
 </head>
 <body>
   <!-- Kapak (hero) -->
@@ -154,9 +154,23 @@
     </div>
   </div>
 
+  <!-- Sipariş rehberi (ilk girişte otomatik açılır) -->
+  <div id="rehberPopup" class="rehber-pop" hidden>
+    <div class="rehber-ic">
+      <button id="rehberKapat" class="kapat rehber-x" aria-label="Kapat">✕</button>
+      <div class="rehber-ikon" id="rehberIkon">📦</div>
+      <h2 id="rehberBaslik">Nasıl Sipariş Verilir?</h2>
+      <ol class="rehber-adimlar" id="rehberAdimlar"></ol>
+      <p class="rehber-not" id="rehberNot"></p>
+      <button id="rehberBasla" class="siparis-btn">Anladım, Başlayalım 🍽️</button>
+    </div>
+  </div>
+  <!-- "Nasıl sipariş verilir?" yardım butonu -->
+  <button id="rehberBtn" class="rehber-btn" aria-label="Nasıl sipariş verilir?">?</button>
+
   <!-- Toast bildirimi -->
   <div id="toast" class="toast" hidden></div>
 
-  <script src="app.js?v=12"></script>
+  <script src="app.js?v=13"></script>
 </body>
 </html>

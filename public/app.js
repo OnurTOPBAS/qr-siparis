@@ -534,6 +534,41 @@ $("iyziKapat").onclick = () => {
   iyziTemizle();
 };
 
+// --- Sipariş rehberi (nasıl sipariş verilir) ---
+function rehberDoldur() {
+  const adimlar = paketMi
+    ? [
+        ["🍔", "Menüden beğendiğin ürünleri seç, <b>Sepete Ekle</b>’ye dokun"],
+        ["🛒", "Sağ alttaki <b>sepet</b> simgesine dokun"],
+        ["📍", "<b>Adres</b> ve <b>ödeme yöntemini</b> gir — Kapıda Nakit / Kart, Yemek Kartı ya da Online Ödeme"],
+        ["✅", "<b>Siparişi Gönder</b> — siparişin hazırlanıp kapına gelir!"],
+      ]
+    : [
+        ["🍔", "Menüden beğendiğin ürünleri seç, <b>Sepete Ekle</b>’ye dokun"],
+        ["🛒", "Sağ alttaki <b>sepet</b> simgesine dokun"],
+        ["✅", "<b>Siparişi Gönder</b> — siparişin doğrudan mutfağa düşer"],
+        ["⏱️", "1,5 dakika içinde ekleme/değişiklik yapabilirsin"],
+      ];
+  $("rehberIkon").textContent = paketMi ? "📦" : "🍽️";
+  $("rehberBaslik").textContent = paketMi ? "Eve Sipariş Nasıl Verilir?" : "Masadan Sipariş Nasıl Verilir?";
+  $("rehberAdimlar").innerHTML = adimlar
+    .map(([e, t], i) => `<li><span class="ra-no">${i + 1}</span><span class="ra-ikon">${e}</span><span class="ra-metin">${t}</span></li>`)
+    .join("");
+  $("rehberNot").innerHTML = paketMi
+    ? `💡 Online sipariş için minimum sepet tutarı <b>${minPaketTutar || 600} ₺</b>.`
+    : "💡 Siparişin masana servis edilir, beklemen yeterli.";
+}
+function rehberAc() { rehberDoldur(); $("rehberPopup").hidden = false; document.body.style.overflow = "hidden"; }
+function rehberKapatFn() { $("rehberPopup").hidden = true; document.body.style.overflow = ""; }
+$("rehberBtn").onclick = rehberAc;
+$("rehberKapat").onclick = rehberKapatFn;
+$("rehberBasla").onclick = rehberKapatFn;
+// İlk ziyarette otomatik göster (moda göre bir kez)
+const REHBER_KEY = "rehberGoruldu_" + (paketMi ? "paket" : "masa");
+if (!localStorage.getItem(REHBER_KEY)) {
+  setTimeout(() => { rehberAc(); try { localStorage.setItem(REHBER_KEY, "1"); } catch {} }, 700);
+}
+
 // --- İptal talebi (kasadan onay gerekir) ---
 $("siparisIptalBtn").onclick = async () => {
   if (!aktifSiparis || iptalBekliyor) return;
