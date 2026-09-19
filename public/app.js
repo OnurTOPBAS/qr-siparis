@@ -540,19 +540,30 @@ $("tanitimKapat").onclick = () => { $("tanitim").hidden = true; try { localStora
 
 // --- Yönlendirmeli tur (coach-mark): gerçek butonları işaretleyip adım adım anlatır ---
 function turAdimlari() {
-  return paketMi
-    ? [
-        { sel: ".kat-nav", metin: "Önce menüye göz at 👀 — kategorileri yana <b>kaydırarak</b> gezebilirsin." },
-        { sel: ".menu .ekle-btn", metin: "Beğendiğin ürünü <b>“＋ Sepete Ekle”</b> ile sepetine ekle." },
-        { sel: "#sepetBtn", goster: "#sepetBtn", metin: "Son adım: <b>sepete</b> dokun, adres + ödeme bilgini gir ve siparişini onayla ✅" },
-      ]
-    : [
-        { sel: ".kat-nav", metin: "Önce menüye göz at 👀 — kategorileri yana <b>kaydırarak</b> gezebilirsin." },
-        { sel: ".menu .ekle-btn", metin: "Beğendiğin ürünü <b>“＋ Sepete Ekle”</b> ile sepetine ekle." },
-        { sel: "#sepetBtn", goster: "#sepetBtn", metin: "Son adım: <b>sepete</b> dokun ve <b>Siparişi Gönder</b> — siparişin mutfağa düşer 🍽️" },
-      ];
+  const sonAdim = paketMi
+    ? { sel: "#sepetBtn", goster: "#sepetBtn", metin: "Son adım: <b>sepete</b> dokun, adres + ödeme bilgini gir ve siparişini onayla ✅" }
+    : { sel: "#sepetBtn", goster: "#sepetBtn", metin: "Son adım: <b>sepete</b> dokun ve <b>Siparişi Gönder</b> — siparişin mutfağa düşer 🍽️" };
+  return [
+    { sel: ".menu .urun", metin: "👀 <b>Aşağı kaydırarak</b> menüdeki ürünlere göz at." },
+    { sel: ".menu .ekle-btn", metin: "Beğendiğin ürünü <b>“＋ Sepete Ekle”</b> ile ekle." },
+    sonAdim,
+  ];
 }
-let turAdim = 0, turList = [];
+let turAdim = 0, turList = [], turHedef = null;
+function turVy() { return window.visualViewport ? window.visualViewport.height : window.innerHeight; }
+function turKonumla() {
+  if ($("turOverlay").hidden || !turHedef) return;
+  const r = turHedef.getBoundingClientRect();
+  const pad = 8, vw = window.innerWidth, vh = turVy();
+  const delik = $("turDelik");
+  delik.style.top = Math.max(4, r.top - pad) + "px";
+  delik.style.left = Math.max(4, r.left - pad) + "px";
+  delik.style.width = Math.min(vw - 8, r.width + pad * 2) + "px";
+  delik.style.height = (r.height + pad * 2) + "px";
+  const balon = $("turBalon");
+  if (vh - r.bottom > 230) { balon.style.top = (r.bottom + pad + 14) + "px"; balon.style.bottom = "auto"; }
+  else { balon.style.top = "auto"; balon.style.bottom = (vh - r.top + pad + 14) + "px"; }
+}
 function turBaslat() {
   turList = turAdimlari();
   turAdim = 0;
@@ -563,6 +574,7 @@ function turBaslat() {
 function turBitir() {
   $("turOverlay").hidden = true;
   document.body.style.overflow = "";
+  turHedef = null;
   try { guncelleSepetCubugu(); } catch {} // geçici gösterilen sepet logosunu doğru duruma al
 }
 function turGoster() {
@@ -571,31 +583,29 @@ function turGoster() {
   let hedef = document.querySelector(a.sel);
   if (a.goster) { const el = document.querySelector(a.goster); if (el) { el.hidden = false; hedef = el; } }
   if (!hedef) { turAdim++; return turGoster(); }
-  try { hedef.scrollIntoView({ block: "center" }); } catch {}
-  requestAnimationFrame(() => {
-    const r = hedef.getBoundingClientRect();
-    const pad = 8;
-    const delik = $("turDelik");
-    delik.style.top = (r.top - pad) + "px";
-    delik.style.left = (r.left - pad) + "px";
-    delik.style.width = (r.width + pad * 2) + "px";
-    delik.style.height = (r.height + pad * 2) + "px";
-    $("turMetin").innerHTML = a.metin;
-    const balon = $("turBalon");
-    const altBosluk = window.innerHeight - r.bottom;
-    if (altBosluk > 180) { balon.style.top = (r.bottom + pad + 14) + "px"; balon.style.bottom = "auto"; }
-    else { balon.style.bottom = (window.innerHeight - r.top + pad + 14) + "px"; balon.style.top = "auto"; }
-    $("turNoktalar").innerHTML = turList.map((_, i) => `<span class="${i === turAdim ? "aktif" : ""}"></span>`).join("");
-    $("turIleri").textContent = (turAdim === turList.length - 1) ? "Başla 🍽️" : "İleri →";
-  });
+  turHedef = hedef;
+  $("turMetin").innerHTML = a.metin;
+  $("turNoktalar").innerHTML = turList.map((_, i) => `<span class="${i === turAdim ? "aktif" : ""}"></span>`).join("");
+  $("turIleri").textContent = (turAdim === turList.length - 1) ? "Başla 🍽️" : "İleri →";
+  // ANLIK kaydır (global smooth-scroll'u ez), sonra birkaç kez konumla (mobil garanti)
+  const y = window.scrollY + hedef.getBoundingClientRect().top - turVy() / 2 + hedef.offsetHeight / 2;
+  window.scrollTo({ top: Math.max(0, y), behavior: "auto" });
+  turKonumla();
+  requestAnimationFrame(turKonumla);
+  setTimeout(turKonumla, 120);
+  setTimeout(turKonumla, 300);
 }
 $("turIleri").onclick = () => { turAdim++; (turAdim >= turList.length) ? turBitir() : turGoster(); };
 $("turGec").onclick = turBitir;
 $("rehberBtn").onclick = turBaslat;
-// İlk ziyarette otomatik başlat (moda göre bir kez)
+// Ekran / adres çubuğu değişince yeniden hizala (her mobil tarayıcı uyumu)
+window.addEventListener("resize", turKonumla);
+window.addEventListener("scroll", turKonumla, { passive: true });
+if (window.visualViewport) window.visualViewport.addEventListener("resize", turKonumla);
+// İlk ziyarette otomatik başlat (moda göre bir kez), menü yüklendikten sonra
 const TUR_KEY = "turGoruldu_" + (paketMi ? "paket" : "masa");
 if (!localStorage.getItem(TUR_KEY)) {
-  setTimeout(() => { turBaslat(); try { localStorage.setItem(TUR_KEY, "1"); } catch {} }, 1000);
+  setTimeout(() => { if (document.querySelector(".menu .urun")) { turBaslat(); try { localStorage.setItem(TUR_KEY, "1"); } catch {} } }, 1200);
 }
 
 // --- İptal talebi (kasadan onay gerekir) ---
