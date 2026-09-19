@@ -527,3 +527,25 @@ body {
   box-shadow: var(--golge); display: flex; align-items: center; justify-content: center;
 }
 .rehber-btn:active { transform: scale(.94); }
+
+/* ===== Tanıtım şeridi (kompakt, kapatılabilir) ===== */
+.tanitim {
+  position: relative;
+  max-width: 640px; margin: 14px auto 0; padding: 14px 40px 14px 16px;
+  background: linear-gradient(135deg, #fff3e0, #ffe7cc);
+  border: 1px solid #f2d5ab; border-radius: 16px;
+  box-shadow: var(--golge);
+}
+.tanitim h3 { font-size: 1rem; font-weight: 800; color: var(--komur); margin-bottom: 4px; }
+.tanitim p { font-size: .86rem; line-height: 1.45; color: var(--metin); margin-bottom: 8px; }
+.tanitim p b { color: var(--kirmizi-koyu); }
+.tanitim-odeme { font-size: .8rem; font-weight: 600; color: #7a5a2a; }
+.tanitim-guven { font-size: .78rem; color: var(--soluk); margin-top: 3px; }
+.tanitim-guven b { color: #0b63f6; }
+.tanitim-x {
+  position: absolute; top: 8px; right: 8px;
+  width: 28px; height: 28px; border-radius: 50%; border: none;
+  background: rgba(0,0,0,.06); color: #7a5a2a; font-size: .85rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.tanitim-x:active { transform: scale(.92); }

@@ -534,6 +534,10 @@ $("iyziKapat").onclick = () => {
   iyziTemizle();
 };
 
+// --- Tanıtım şeridi (kapatılabilir, tercih hatırlanır) ---
+try { if (localStorage.getItem("tanitimKapali") === "1") $("tanitim").hidden = true; } catch {}
+$("tanitimKapat").onclick = () => { $("tanitim").hidden = true; try { localStorage.setItem("tanitimKapali", "1"); } catch {} };
+
 // --- Yönlendirmeli tur (coach-mark): gerçek butonları işaretleyip adım adım anlatır ---
 function turAdimlari() {
   return paketMi
