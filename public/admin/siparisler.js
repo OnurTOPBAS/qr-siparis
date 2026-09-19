@@ -164,6 +164,20 @@ function fisYazdir(o) {
   window.print();
 }
 
+// Yazdırma kuyruğu — arka arkaya siparişlerde print'ler çakışmasın, biri patlarsa diğerini bozmasın
+let yazdirKuyrugu = [];
+let yazdiriliyor = false;
+function yazdirmayaEkle(o) { yazdirKuyrugu.push(o); kuyrukIsle(); }
+function kuyrukIsle() {
+  if (yazdiriliyor || !yazdirKuyrugu.length) return;
+  yazdiriliyor = true;
+  const o = yazdirKuyrugu.shift();
+  setTimeout(() => {
+    try { fisYazdir(o); } catch (e) { console.error("Fiş yazdırma hatası:", e); }
+    setTimeout(() => { yazdiriliyor = false; kuyrukIsle(); }, 900);
+  }, 60);
+}
+
 // --- Bağlantı ---
 socket.on("connect", () => { $("baglanti").textContent = "● Bağlı"; $("baglanti").className = "rozet yesil"; });
 socket.on("disconnect", () => { $("baglanti").textContent = "○ Koptu"; $("baglanti").className = "rozet kirmizi"; });
@@ -174,7 +188,7 @@ socket.on("initOrders", (list) => {
   list.forEach((o) => kartEkle(o, false));
   guncelleSayac();
 });
-socket.on("newOrder", (o) => { kartEkle(o, true); bipCal(); guncelleSayac(); if (otoYazdir) fisYazdir(o); });
+socket.on("newOrder", (o) => { kartEkle(o, true); bipCal(); guncelleSayac(); if (otoYazdir) yazdirmayaEkle(o); });
 // Müşteri siparişini düzenledi → kartı güncelle (hafif vurgu, ses yok)
 socket.on("orderChanged", (o) => {
   const k = document.querySelector(`.kart[data-id="${o.id}"]`);
