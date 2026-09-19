@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=12" />
+  <link rel="stylesheet" href="style.css?v=13" />
 </head>
 <body>
   <!-- Kapak (hero) -->
@@ -154,23 +154,26 @@
     </div>
   </div>
 
-  <!-- Sipariş rehberi (ilk girişte otomatik açılır) -->
-  <div id="rehberPopup" class="rehber-pop" hidden>
-    <div class="rehber-ic">
-      <button id="rehberKapat" class="kapat rehber-x" aria-label="Kapat">✕</button>
-      <div class="rehber-ikon" id="rehberIkon">📦</div>
-      <h2 id="rehberBaslik">Nasıl Sipariş Verilir?</h2>
-      <ol class="rehber-adimlar" id="rehberAdimlar"></ol>
-      <p class="rehber-not" id="rehberNot"></p>
-      <button id="rehberBasla" class="siparis-btn">Anladım, Başlayalım 🍽️</button>
+  <!-- Yönlendirmeli tur (coach-mark) — ilk girişte otomatik başlar -->
+  <div id="turOverlay" class="tur-overlay" hidden>
+    <div id="turDelik" class="tur-delik"></div>
+    <div id="turBalon" class="tur-balon">
+      <div id="turMetin" class="tur-metin"></div>
+      <div class="tur-alt">
+        <div id="turNoktalar" class="tur-noktalar"></div>
+        <div class="tur-butonlar">
+          <button id="turGec" class="tur-gec">Geç</button>
+          <button id="turIleri" class="tur-ileri">İleri →</button>
+        </div>
+      </div>
     </div>
   </div>
-  <!-- "Nasıl sipariş verilir?" yardım butonu -->
+  <!-- "Nasıl sipariş verilir?" yardım butonu (turu tekrar başlatır) -->
   <button id="rehberBtn" class="rehber-btn" aria-label="Nasıl sipariş verilir?">?</button>
 
   <!-- Toast bildirimi -->
   <div id="toast" class="toast" hidden></div>
 
-  <script src="app.js?v=13"></script>
+  <script src="app.js?v=14"></script>
 </body>
 </html>

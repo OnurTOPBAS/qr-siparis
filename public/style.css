@@ -495,19 +495,31 @@ body {
 .fab-badge.pop { animation: rozetPop .45s ease; }
 @keyframes rozetPop { 0% { transform: scale(1); } 45% { transform: scale(1.6); } 100% { transform: scale(1); } }
 
-/* ===== Sipariş rehberi (nasıl sipariş verilir) ===== */
-.rehber-pop { position: fixed; inset: 0; z-index: 75; background: rgba(36,26,21,.6); display: flex; align-items: center; justify-content: center; padding: 20px; }
-.rehber-ic { background: #fff; border-radius: 24px; padding: 28px 22px 22px; max-width: 400px; width: 100%; position: relative; animation: yukari .3s ease; max-height: 90vh; overflow-y: auto; box-shadow: var(--golge-yuksek); }
-.rehber-x { position: absolute; top: 12px; right: 12px; }
-.rehber-ikon { font-size: 2.8rem; text-align: center; line-height: 1; }
-.rehber-ic h2 { text-align: center; color: var(--komur); font-size: 1.3rem; font-weight: 800; margin: 8px 0 20px; }
-.rehber-adimlar { list-style: none; display: flex; flex-direction: column; gap: 16px; margin-bottom: 18px; }
-.rehber-adimlar li { display: grid; grid-template-columns: auto auto 1fr; gap: 10px; align-items: center; }
-.ra-no { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, var(--kirmizi), var(--turuncu)); color: #fff; font-weight: 800; font-size: .85rem; display: flex; align-items: center; justify-content: center; }
-.ra-ikon { flex: 0 0 auto; width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #fff2d6, #ffe0b0); display: flex; align-items: center; justify-content: center; font-size: 1.35rem; }
-.ra-metin { font-size: .95rem; line-height: 1.45; color: var(--metin); }
-.ra-metin b { color: var(--komur); }
-.rehber-not { background: #fff6ea; border: 1px solid #f0dcc0; border-radius: 12px; padding: 11px 13px; font-size: .85rem; color: #8a5a00; line-height: 1.5; margin-bottom: 18px; }
+/* ===== Yönlendirmeli tur (coach-mark / spotlight) ===== */
+.tur-overlay { position: fixed; inset: 0; z-index: 80; }
+.tur-delik {
+  position: fixed; border-radius: 16px;
+  box-shadow: 0 0 0 9999px rgba(20,12,8,.72); /* etrafı karart, deliği açık bırak */
+  border: 2px solid var(--turuncu);
+  transition: top .3s ease, left .3s ease, width .3s ease, height .3s ease;
+  pointer-events: none;
+}
+.tur-balon {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  max-width: 320px; width: calc(100% - 36px);
+  background: #fff; border-radius: 18px; padding: 16px 18px;
+  box-shadow: var(--golge-yuksek); z-index: 81;
+}
+.tur-metin { font-size: 1rem; line-height: 1.5; color: var(--komur); margin-bottom: 14px; }
+.tur-metin b { color: var(--kirmizi); }
+.tur-alt { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.tur-noktalar { display: flex; gap: 6px; }
+.tur-noktalar span { width: 7px; height: 7px; border-radius: 50%; background: #e0cdb2; transition: all .2s ease; }
+.tur-noktalar span.aktif { background: var(--turuncu); width: 20px; border-radius: 4px; }
+.tur-butonlar { display: flex; gap: 6px; align-items: center; }
+.tur-gec { background: none; border: none; color: var(--soluk); font-size: .85rem; cursor: pointer; padding: 8px 6px; font-family: inherit; }
+.tur-ileri { background: linear-gradient(135deg, var(--turuncu), var(--kirmizi)); color: #fff; border: none; border-radius: 22px; padding: 10px 20px; font-weight: 700; cursor: pointer; font-family: inherit; font-size: .95rem; }
+.tur-ileri:active { transform: scale(.96); }
 .rehber-btn {
   position: fixed; bottom: 24px; left: 18px; z-index: 30;
   width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid #eaddc9;
